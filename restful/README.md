@@ -1,0 +1,77 @@
+# Odoo RESTful API
+
+## How to Use
+
+### How to request or access token
+```python
+import requests, json, pprint
+
+headers = {
+    'content-type': 'application/x-www-form-urlencoded', 
+    'charset':'utf-8'
+}
+
+data = {
+    'login': 'admin', 
+    'password': 'admin', 
+    'db': 'galago.ng'
+}
+base_url = 'http://odoo.ng'
+
+req = requests.get('{}/api/auth/token'.format(base_url), data=data, headers=headers)
+content = json.loads(req.content.decode('utf-8'))
+headers['access-token'] = content.get('access_token') # add thr access token to the header
+print(headers)
+```
+### To delete acccess-token
+
+```python
+req = requests.delete('%s/api/auth/token'%base_url, data=data, headers=headers)
+```
+### [GET] 
+```python
+req = requests.get('{}/api/sale.order/'.format(base_url), headers=headers,
+                   data={'limit': 10, 'domain': []})
+# ***Pass optional parameter like this ***
+# {
+#   'limit': 10, 'domain': "[('supplier','=',True),('parent_id','=', False)]",
+#   'order': 'name asc', 'offset': 10
+# }
+
+print(req.content)
+
+```
+### [POST]
+```python
+
+**POST request**
+```python
+p = requests.post('%s/api/res.partner/'%base_url, headers=headers,
+                  data=json.dumps({
+    'name':'John',
+    'country_id': 105,
+    'child_ids': [{'name': 'Contact', 'type':'contact'},
+                  {'name': 'Invoice', 'type':'invoice'}],
+    'category_id': [{'id':9}, {'id': 10}]
+    }
+))
+print(p.content)
+```
+
+**PUT Request**
+```python
+p = requests.put('http://localhost:8069/api/res.partner/68', headers=headers,
+                 data=json.dumps({
+    'name':'John Doe',
+    'country_id': 107,
+    'category_id': [{'id': 10}]
+    }
+))
+print(p.content)
+```
+
+**DELETE Request**
+```python
+p = requests.delete('http://localhost:8069/api/res.partner/68', headers=headers)
+print(p.content)
+```

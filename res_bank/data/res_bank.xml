@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <record model="res.bank" id="access_bank">
+            <field name="name">Access Bank PLC</field>
+            <field name="country" ref="base.ng"/>
+        </record>
+
+        <record model="res.bank" id="bank_crelan">
+            <field name="name">Diamond Bank</field>
+        </record>
+
+        <record model="res.bank" id="bank_cbc">
+            <field name="name">Ecobank</field>
+        </record>
+
+        <record model="res.bank" id="jaiz_bank">
+            <field name="name">Jaiz Bank</field>
+        </record>
+
+        <record model="res.bank" id="keystone_bank">
+            <field name="name">Keystone Bank</field>
+        </record>
+
+        <record model="res.bank" id="skye_bank">
+            <field name="name">Skye Bank</field>
+        </record>
+
+        <record model="res.bank" id="stanbic_bank">
+            <field name="name">Stanbic IBTC Bank</field>
+        </record>
+
+        <record model="res.bank" id="heritage_bank">
+            <field name="name">Heritage Bank</field>
+        </record>
+
+        <record model="res.bank" id="gtb_bank">
+            <field name="name">Guaranty Trust Bank</field>
+        </record>
+
+        <record model="res.bank" id="first_bank">
+            <field name="name">First Bank of Nigeria</field>
+        </record>
+
+        <record model="res.bank" id="fidelity_bank">
+            <field name="name">Fidelity Bank</field>
+        </record>
+
+        <record model="res.bank" id="bank_cbc">
+            <field name="name">Ecobank</field>
+        </record>
+
+        <record model="res.bank" id="fcmb">
+            <field name="name">FCMB</field>
+        </record>
+
+        <record model="res.bank" id="zenith_bank">
+            <field name="name">Zenith Bank</field>
+        </record>
+
+        <record model="res.bank" id="sterling_bank">
+            <field name="name">Sterling Bank</field>
+        </record>
+
+        <record model="res.bank" id="union_bank">
+            <field name="name">Union Bank</field>
+        </record>
+
+        <record model="res.bank" id="uba_bank">
+            <field name="name">United Bank for Africa</field>
+        </record>
+
+        <record model="res.bank" id="unity_bank">
+            <field name="name">Unity Bank</field>
+        </record>
+
+        <record model="res.bank" id="wema_bank">
+            <field name="name">Wema Bank</field>
+        </record>
+
+    </data>
+</odoo>
