@@ -38,7 +38,7 @@ def extract_arguments(payload, offset=0, limit=0, order=None):
     if payload.get('domain'):
         domain += ast.literal_eval(payload.get('domain'))
     if payload.get('fields'):
-        fields += ast.literal_eval(payload.get('field'))
+        fields += ast.literal_eval(payload.get('fields'))
     if payload.get('offset'):
         offset = int(payload['offset'])
     if payload.get('limit'):
