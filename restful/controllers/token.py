@@ -45,14 +45,18 @@ class APIToken(http.Controller):
            content = json.loads(req.content.decode('utf-8'))
            headers.update(access-token=content.get('access_token'))
         """
+
         _token = request.env['api.access_token']
         params = ['db', 'login', 'password']
         params = {key: post.get(key) for key in params if post.get(key)}
         db, username, password = post.get(
             'db'), post.get('login'), post.get('password')
+
         if not all([db, username, password]):
-            # Empty 'db' or 'username' or 'password:
-            return invalid_response(400, 'missing error', 'either of the following are missing [db, username,password]')
+            # empty db | username | password is missing
+            error_msg = 'either of the following are missing [db, username, password]'
+            return invalid_response(400, 'missing error', error_msg)
+
         # Login in odoo database:
         try:
             request.session.authenticate(db, username, password)

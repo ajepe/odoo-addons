@@ -18,6 +18,7 @@ def nonce(length=40, prefix='access_token'):
 
 class APIAccessToken(models.Model):
     _name = 'api.access_token'
+    _description = 'API access token'
 
     token = fields.Char('Access Token', required=True)
     user_id = fields.Many2one('res.users', string='User', required=True)
@@ -45,8 +46,6 @@ class APIAccessToken(models.Model):
                 'token': nonce(),
             }
             access_token = self.env['api.access_token'].sudo().create(vals)
-            # we have to commit now, because /oauth2/tokeninfo could
-            # be called before we finish current transaction.
             self._cr.commit()
         if not access_token:
             return None

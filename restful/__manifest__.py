@@ -1,13 +1,12 @@
 {
-    'name': 'RESTFUL API For Odoo',
-    'version': '0.1.0',
+    'name': 'Odoo RESTFUL API',
+    'version': '1.0.0',
     'category': 'API',
-    'author': 'The InnerCircle',
-    'website': 'https://ajepe.github.io/restful-api-for-odoo',
-    'summary': 'RESTFUL API For Odoo',
-    'support': 'galagoapps@gmail.com',
-    'description': """
-RESTFUL API For Odoo
+    'author': 'Babatope Ajepe',
+    'website': 'https://ajepe.github.io/blog/restful-api-for-odoo',
+    'summary': 'Odoo RESTFUL API',
+    'support': 'ajepebabatope@gmail.com',
+    'description': """ RESTFUL API For Odoo
 ====================
 With use of this module user can enable REST API in any Odoo applications/modules
 

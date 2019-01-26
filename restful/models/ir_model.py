@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 # Part of odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import  fields, models 
+from odoo import fields, models
 
 
 class IrModel(models.Model):
+    """Enable all models to be available for API request."""
+    
     _inherit = 'ir.model'
 
     rest_api = fields.Boolean('REST API', default=True,
