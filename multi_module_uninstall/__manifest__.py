@@ -1,35 +1,29 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "multi_module_uninstall",
+    'name': "Multiple Modules Uninstalled",
 
-    'summary': """
-        Short (1 phrase/line) summary of the module's purpose, used as
-        subtitle on modules listing or apps.openerp.com""",
+    'summary': """This module enable you to select and un-install multiple modules modules at a go.""",
 
     'description': """
-        Long description of module's purpose
+        This module enable you to select and un-install multiple modules modules at a go.
+
+        Select the modules to un-installed from the tree view and click on the action un-installed boom!!!
     """,
 
-    'author': "My Company",
-    'website': "http://www.yourcompany.com",
+    'author': "Babatope Ajepe",
+    'website': "http://ajepe.github.io",
 
     # Categories can be used to filter modules in modules listing
     # Check https://github.com/odoo/odoo/blob/master/odoo/addons/base/module/module_data.xml
     # for the full list
-    'category': 'Uncategorized',
+    'category': 'base',
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base'],
+    'depends': ['base', 'web'],
 
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
-        'views/views.xml',
-        'views/templates.xml',
-    ],
-    # only loaded in demonstration mode
-    'demo': [
-        'demo/demo.xml',
+        'views/module_multiple_uninstall.xml',
     ],
 }
