@@ -18,6 +18,8 @@
     # for the full list
     'category': 'base',
     'version': '0.1',
+    'license': 'LGPL-3',
+    'images': ['static/description/main_screenshot.png'],
 
     # any module necessary for this one to work correctly
     'depends': ['base', 'web'],
