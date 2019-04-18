@@ -27,7 +27,7 @@ def invalid_response(typ, message=None, status=400):
         content_type='application/json; charset=utf-8',
         response=json.dumps({
             'type': typ,
-            'message': message if message else 'wrong arguments (missing validation)',
+            'message': str(message) if message else 'wrong arguments (missing validation)',
         }),
     )
 
