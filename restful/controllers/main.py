@@ -98,7 +98,7 @@ class APIController(http.Controller):
                 resource = request.env[model.model].sudo().create(payload)
             except Exception as e:
                 return invalid_response('params', e)
-            return {'id': resource.id}
+            return valid_response({'id': resource.id})
         return invalid_response('invalid object model', 'The model %s is not available in the registry.' % ioc_name)
 
     @validate_token
