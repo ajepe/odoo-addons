@@ -51,12 +51,16 @@ class APIController(http.Controller):
         if model:
             domain, fields, offset, limit, order = extract_arguments(
                 payload)
-            try:
+            data = request.env[model.model].sudo().search_read(
+                domain=domain, fields=fields, offset=offset, limit=limit, order=order)
+            if id:
+                domain = [('id', '=', int(id))]
                 data = request.env[model.model].sudo().search_read(
-                    domain=domain, fields=fields, offset=offset, limit=limit, order=order)
+                domain=domain, fields=fields, offset=offset, limit=limit, order=order)
+            if data:
                 return valid_response(data)
-            except Exception as e:
-                return invalid_response('Exception', e)
+            else:
+                return valid_response(data)
         return invalid_response('invalid object model', 'The model %s is not available in the registry.' % ioc_name)
 
     @validate_token
@@ -98,7 +102,12 @@ class APIController(http.Controller):
                 resource = request.env[model.model].sudo().create(payload)
             except Exception as e:
                 return invalid_response('params', e)
-            return {'id': resource.id}
+            else:
+                data = {'id': resource.id}
+                if resource:
+                    return valid_response(data)
+                else:
+                    return valid_response(data)
         return invalid_response('invalid object model', 'The model %s is not available in the registry.' % ioc_name)
 
     @validate_token

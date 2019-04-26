@@ -1,8 +1,18 @@
 """Common methods"""
 import ast
-import json
+import logging
 import werkzeug.wrappers
+from odoo.http import request
 
+_logger = logging.getLogger(__name__)
+try:
+    import simplejson as json
+    from simplejson.errors import JSONDecodeError
+except ModuleNotFoundError as identifier:
+    _logger.error(identifier)
+else:
+    import json
+    
 
 def valid_response(data, status=200):
     """Valid Response
@@ -18,31 +28,43 @@ def valid_response(data, status=200):
     )
 
 
-def invalid_response(typ, message=None, status=400):
+def invalid_response(typ, message=None, status=401):
     """Invalid Response
     This will be the return value whenever the server runs into an error
     either from the client or the server."""
+    # return json.dumps({})
     return werkzeug.wrappers.Response(
         status=status,
         content_type='application/json; charset=utf-8',
         response=json.dumps({
             'type': typ,
-            'message': str(message) if message else 'wrong arguments (missing validation)',
+            'message': str(message) if str(message) else 'wrong arguments (missing validation)',
         }),
     )
 
 
-def extract_arguments(payload, offset=0, limit=0, order=None):
+def extract_arguments(payloads, offset=0, limit=0, order=None):
     """."""
-    fields, domain = [], []
+    fields, domain, payload = [], [], {}
+    data = str(payloads)[2:-2]
+    try:
+        payload = json.loads(data)
+    except JSONDecodeError as e:
+        _logger.error(e)
     if payload.get('domain'):
-        domain += ast.literal_eval(payload.get('domain'))
+        for _domain in payload.get('domain'):
+            l, o, r = _domain
+            if o == "': '":
+                o = '='
+            elif o == "!': '":
+                o = '!='
+            domain.append(tuple([l, o, r]))
     if payload.get('fields'):
-        fields += ast.literal_eval(payload.get('fields'))
+        fields += payload.get('fields')
     if payload.get('offset'):
         offset = int(payload['offset'])
     if payload.get('limit'):
-        limit = int(payload['limit'])
+        limit = int(payload.get('limit'))
     if payload.get('order'):
         order = payload.get('order')
     return [domain, fields, offset, limit, order]

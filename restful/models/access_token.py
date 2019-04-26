@@ -18,7 +18,6 @@ def nonce(length=40, prefix='access_token'):
 
 class APIAccessToken(models.Model):
     _name = 'api.access_token'
-    _description = 'API access token'
 
     token = fields.Char('Access Token', required=True)
     user_id = fields.Many2one('res.users', string='User', required=True)
