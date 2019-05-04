@@ -20,7 +20,7 @@
     "application": False,
     'currency': 'EUR',
     'price': 130.00,
-    'images': ['static/description/main_screenshot.jpg'],
+    'images': ['static/description/main_screenshot.jpeg'],
     "external_dependencies": {
         'python': ['redis'],
     },
