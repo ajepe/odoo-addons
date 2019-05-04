@@ -17,25 +17,23 @@ any subsequents request.
 
 .. code:: python
 
-    import requests, json
+    import requests
 
     headers = {
-        'content-type': 'application/x-www-form-urlencoded',
         'charset':'utf-8'
     }
 
-    data = {
+    query = {
         'login': 'admin',
         'password': 'admin',
         'db': 'demo_db'
     }
     base_url = 'http://theninnercicle.com.ng'
 
-    req = requests.get('{}/api/auth/token'.format(base_url), data=data, headers=headers)
+    req = requests.get('{}/api/auth/token'.format(base_url), params=query, headers=headers)
+    content = req.json()
 
-    content = json.loads(req.content.decode('utf-8'))
-
-    headers['access-token'] = content.get('access_token') # add the access token to the header
+    headers['access-token'] = content['access_token'] # add the access token to the header
     print(headers)
 
 To delete acccess-token
@@ -43,22 +41,49 @@ To delete acccess-token
 
 .. code:: python
 
-    req = requests.delete('%s/api/auth/token'%base_url, data=data, headers=headers)
+    req = requests.delete('{}/api/auth/token'.format(base_url), params=query, headers=headers)
 
 [GET]
 ~~~~~
 
 .. code:: python
 
-    req = requests.get('{}/api/sale.order/'.format(base_url), headers=headers,
-                       data={'limit': 10, 'domain': []})
-    # ***Pass optional parameter like this ***
-    {
-      'limit': 10, 'domain': "[('supplier','=',True),('parent_id','=', False)]",
-      'order': 'name asc', 'offset': 10
+    import requests
+
+    headers = {
+        'charset': 'utf-8',
+        'access-token': 'access_token'
+    }
+    model = 'res.partner'
+
+    # You can get object by its id
+    id = 100
+    req = requests.get('{}/api/{}/{}'.format(base_url, model, id), headers=headers)
+    print(req.json())
+
+    # You can make queries
+    headers['content-type'] = 'application/x-www-form-urlencoded'
+    query = {
+        'domain': "[('supplier','=',True),('parent_id','=', False)]",
+        'order': 'name asc',
+        'limit': 10,
+        'offset': 0,
+        'fields': "['name', 'supplier', 'parent_id']"
     }
 
-    print(req.content)
+    # You can ommit unnessesary query options
+    query = {
+        'domain': "[('supplier','=',True),('parent_id','=', False)]",
+        'limit': 10
+    }
+
+    # You can also use JSON-like domains
+    query = {
+        'domain': "{'id':100, 'parent_id!':true}",
+        'limit': 10
+    }
+    req = requests.get('{}/api/{}/'.format(base_url, model), headers=headers, data=query)
+    print(req.json())
 
 [POST]
 ~~~~~~
@@ -69,34 +94,45 @@ To delete acccess-token
 
 .. code:: python
 
-    p = requests.post('%s/api/res.partner/'%base_url, headers=headers,
-                      data=json.dumps({
-        'name':'John',
+    model = 'res.partner'
+    data = {
+        'name': 'Babatope Ajepe',
         'country_id': 105,
-        'child_ids': [{'name': 'Contact', 'type':'contact'},
-                      {'name': 'Invoice', 'type':'invoice'}],
-        'category_id': [{'id':9}, {'id': 10}]
-        }
-    ))
-    print(p.content)
+        'child_ids': [
+            {
+                'name': 'Contact',
+                'type': 'contact'
+            },
+            {
+                'name': 'Invoice',
+                'type': 'invoice'
+            }
+        ],
+        'category_id': [{'id': 9}, {'id': 10}]
+    }
+    req = requests.post('{}/api/{}/'.format(base_url, model), headers=headers, data=data)
+    print(req.json())
 
 **PUT Request**
 
 .. code:: python
 
-    p = requests.put('http://theninnercicle.com.ng/api/res.partner/68', headers=headers,
-                     data=json.dumps({
-        'name':'John Doe',
-        'country_id': 107,
-        'category_id': [{'id': 10}]
-        }
-    ))
-    print(p.content)
+    model = 'res.partner'
+    id = 100
+    data = {
+        'name': 'Babatope Ajepe',
+        'country_id': 103,
+        'category_id': [{'id': 9}]
+    }
+    req = requests.put('{}/api/{}/{}'.format(base_url, model, id), headers=headers, data=data)
+    print(req.json())
 
 **DELETE Request**
 
 .. code:: python
 
-    p = requests.delete('http://theninnercicle.com.ng/api/res.partner/68', headers=headers)
-    print(p.content)
+    model = 'res.partner'
+    id = 100
+    req = requests.delete('{}/api/{}/{}'.format(base_url, model, id), headers=headers)
+    print(req.status_code)
 

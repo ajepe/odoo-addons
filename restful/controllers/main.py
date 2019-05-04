@@ -8,7 +8,6 @@ from odoo.addons.restful.common import valid_response, invalid_response, extract
 
 _logger = logging.getLogger(__name__)
 
-
 def validate_token(func):
     """."""
     @functools.wraps(func)
@@ -28,46 +27,70 @@ def validate_token(func):
         return func(self, *args, **kwargs)
     return wrap
 
+def validate_id(func):
+    """."""
+    @functools.wraps(func)
+    def wrap(self, *args, **kwargs):
+        """."""
+        id = kwargs['id']
+        try:
+            kwargs['id'] = int(id)
+        except Exception as e:
+            return invalid_response('invalid object id', 'invalid id %s' % id)
+        else:
+            return func(self, *args, **kwargs)
+    return wrap
 
-_routes = [
-    '/api/<model>',
-    '/api/<model>/<id>',
-    '/api/<model>/<id>/<action>'
-]
-
+def validate_model(func):
+    """."""
+    @functools.wraps(func)
+    def wrap(self, *args, **kwargs):
+        """."""
+        model = kwargs['model']
+        _model = request.env['ir.model'].sudo().search(
+            [('model', '=', model)], limit=1)
+        if not _model:
+            return invalid_response('invalid object model', 'The model %s is not available in the registry.' % model, 404)
+        return func(self, *args, **kwargs)
+    return wrap
 
 class APIController(http.Controller):
     """."""
 
-    def __init__(self):
-        self._model = 'ir.model'
-
     @validate_token
-    @http.route(_routes, type='http', auth="none", methods=['GET'], csrf=False)
-    def get(self, model=None, id=None, **payload):
-        ioc_name = model
-        model = request.env[self._model].sudo().search(
-            [('model', '=', model)], limit=1)
-        if model:
-            domain, fields, offset, limit, order = extract_arguments(
-                payload)
-            data = request.env[model.model].sudo().search_read(
-                domain=domain, fields=fields, offset=offset, limit=limit, order=order)
-            if id:
-                domain = [('id', '=', int(id))]
-                data = request.env[model.model].sudo().search_read(
-                domain=domain, fields=fields, offset=offset, limit=limit, order=order)
-            if data:
-                return valid_response(data)
+    @validate_id
+    @validate_model
+    @http.route('/api/<model>/<id>', type='http', auth="none", methods=['GET'], csrf=False)
+    def get(self, model=None, id=None):
+        """Get record by id.
+        Basic usage:
+        import requests
+
+        headers = {
+            'charset': 'utf-8',
+            'access-token': 'access_token'
+        }
+        model = 'res.partner'
+        id = 100
+        req = requests.get('{}/api/{}/{}'.format(base_url, model, id), headers=headers)
+        print(req.json())
+        """
+        try:
+            record = request.env[model].sudo().browse(id)
+            if record.read():
+                return valid_response(record.read()[0])
             else:
-                return valid_response(data)
-        return invalid_response('invalid object model', 'The model %s is not available in the registry.' % ioc_name)
+                return invalid_response('missing_record',
+                                        'record object with id %s could not be found' % (id, model), 404)
+        except Exception as e:
+            return invalid_response('exception', str(e))
 
     @validate_token
-    @http.route(_routes, type='http', auth="none", methods=['POST'], csrf=False)
-    def create(self, model=None, id=None, **payload):
-        """Create a new record.
-        Basic sage:
+    @validate_model
+    @http.route('/api/<model>', type='http', auth="none", methods=['GET'], csrf=False)
+    def search(self, model=None, **kwargs):
+        """Get records by search query.
+        Basic usage:
         import requests
 
         headers = {
@@ -75,6 +98,48 @@ class APIController(http.Controller):
             'charset': 'utf-8',
             'access-token': 'access_token'
         }
+        model = 'res.partner'
+        data = {
+            'domain': "[('supplier','=',True),('parent_id','=', False)]",
+            'order': 'name asc',
+            'limit': 10,
+            'offset': 0,
+            'fields': "['name', 'supplier', 'parent_id']"
+        }
+        ###
+        #You can ommit unnessesary query params
+        #data = {
+        #    'domain': "[('supplier','=',True),('parent_id','=', False)]",
+        #    'limit': 10
+        #}
+        ###
+        #You can also use JSON-like domains
+        #data = {
+        #    'domain': "{'id':100, 'parent_id!':true}",
+        #    'limit': 10
+        #}
+        req = requests.get('{}/api/{}/'.format(base_url, model), headers=headers, data=data)
+        print(req.json())
+        """
+        domain, fields, offset, limit, order = extract_arguments(kwargs)
+        data = request.env[model].sudo().search_read(
+                domain=domain, fields=fields, offset=offset, limit=limit, order=order)
+        return valid_response(data)
+
+    @validate_token
+    @validate_model
+    @http.route('/api/<model>', type='http', auth="none", methods=['POST'], csrf=False)
+    def create(self, model=None, **kwargs):
+        """Create a new record.
+        Basic usage:
+        import requests
+
+        headers = {
+            'content-type': 'application/x-www-form-urlencoded',
+            'charset': 'utf-8',
+            'access-token': 'access_token'
+        }
+        model = 'res.partner'
         data = {
             'name': 'Babatope Ajepe',
             'country_id': 105,
@@ -85,88 +150,121 @@ class APIController(http.Controller):
                 },
                 {
                     'name': 'Invoice',
-                   'type': 'invoice'
+                    'type': 'invoice'
                 }
             ],
             'category_id': [{'id': 9}, {'id': 10}]
         }
-        req = requests.post('%s/api/res.partner/' %
-                            base_url, headers=headers, data=data)
-
+        req = requests.post('{}/api/{}/'.format(base_url, model), headers=headers, data=data)
+        print(req.json())
         """
-        ioc_name = model
-        model = request.env[self._model].sudo().search(
-            [('model', '=', model)], limit=1)
-        if model:
-            try:
-                resource = request.env[model.model].sudo().create(payload)
-            except Exception as e:
-                return invalid_response('params', e)
+
+        try:
+            record = request.env[model].sudo().create(kwargs)
+            record.refresh()
+            return valid_response(record.read()[0])
+        except Exception as e:
+            return invalid_response('params', e)
+
+
+    @validate_token
+    @validate_id
+    @validate_model
+    @http.route('/api/<model>/<id>', type='http', auth="none", methods=['PUT'], csrf=False)
+    def put(self, model=None, id=None, **kwargs):
+        """Update existing record.
+        Basic usage:
+        import requests
+
+        headers = {
+            'content-type': 'application/x-www-form-urlencoded',
+            'charset': 'utf-8',
+            'access-token': 'access_token'
+        }
+        model = 'res.partner'
+        id = 100
+        data = {
+            'name': 'Babatope Ajepe',
+            'country_id': 103,
+            'category_id': [{'id': 9}]
+        }
+        req = requests.put('{}/api/{}/{}'.format(base_url, model, id), headers=headers, data=data)
+        print(req.json())
+        """
+
+        try:
+            record = request.env[model].sudo().browse(id)
+            if record.read():
+                result = record.write(kwargs)
+                record.refresh()
+                return valid_response(record.read()[0])
             else:
-                data = {'id': resource.id}
-                if resource:
-                    return valid_response(data)
-                else:
-                    return valid_response(data)
-        return invalid_response('invalid object model', 'The model %s is not available in the registry.' % ioc_name)
+                return invalid_response('missing_record', 'record object with id %s could not be found' % id, 404)
+        except Exception as e:
+            return invalid_response('exception', str(e))
 
     @validate_token
-    @http.route(_routes, type='http', auth="none", methods=['PUT'], csrf=False)
-    def put(self, model=None, id=None, **payload):
-        """."""
-        try:
-            _id = int(id)
-        except Exception as e:
-            return invalid_response('invalid object id', 'invalid literal %s for id with base ' % id)
-        _model = request.env[self._model].sudo().search(
-            [('model', '=', model)], limit=1)
-        if not _model:
-            return invalid_response('invalid object model', 'The model %s is not available in the registry.' % model, 404)
-        try:
-            request.env[_model.model].sudo().browse(_id).write(payload)
-        except Exception as e:
-            return invalid_response('exception', e.name)
-        else:
-            return valid_response('update %s record with id %s successfully!' % (_model.model, _id))
+    @validate_id
+    @validate_model
+    @http.route('/api/<model>/<id>/<action>', type='http', auth="none", methods=['PATCH'], csrf=False)
+    def patch(self, model=None, id=None, action=None, **kwargs):
+        """Call action for model.
+        Basic usage:
+        import requests
 
-    @validate_token
-    @http.route(_routes, type='http', auth="none", methods=['DELETE'], csrf=False)
-    def delete(self, model=None, id=None, **payload):
-        """."""
-        try:
-            _id = int(id)
-        except Exception as e:
-            return invalid_response('invalid object id', 'invalid literal %s for id with base ' % id)
-        try:
-            record = request.env[model].sudo().search([('id', '=', _id)])
-            if record:
-                record.unlink()
-            else:
-                return invalid_response('missing_record', 'record object with id %s could not be found' % _id, 404)
-        except Exception as e:
-            return invalid_response('exception', e.name, 503)
-        else:
-            return valid_response('record %s has been successfully deleted' % record.id)
+        headers = {
+            'charset': 'utf-8',
+            'access-token': 'access_token'
+        }
+        model = 'res.partner'
+        id = 100
+        action = 'delete'
+        req = requests.patch('{}/api/res.{}/{}'.format(base_url, model, id, action), headers=headers)
+        print(req.content)
+        """
 
-    @validate_token
-    @http.route(_routes, type='http', auth="none", methods=['PATCH'], csrf=False)
-    def patch(self, model=None, id=None, action=None, **payload):
-        """."""
         try:
-            _id = int(id)
-        except Exception as e:
-            return invalid_response('invalid object id', 'invalid literal %s for id with base ' % id)
-        try:
-            record = request.env[model].sudo().search([('id', '=', _id)])
-            _callable = action in [method for method in dir(
-                record) if callable(getattr(record, method))]
-            if record and _callable:
-                # action is a dynamic variable.
-                getattr(record, action)()
+            record = request.env[model].sudo().browse(id)
+            if record.read():
+                _callable = action in [method for method in dir(
+                    record) if callable(getattr(record, method))]
+                if record and _callable:
+                    # action is a dynamic variable.
+                    getattr(record, action)()
+                record.refresh()
+                return valid_response(record.read()[0])
             else:
                 return invalid_response('missing_record',
-                                        'record object with id %s could not be found or %s object has no method %s' % (_id, model, action), 404)
+                                        'record object with id %s could not be found or %s object has no method %s' % (id, model, action), 404)
         except Exception as e:
             return invalid_response('exception', e, 503)
-        else:
-            return valid_response('record %s has been successfully patched' % record.id)
+
+    @validate_token
+    @validate_id
+    @validate_model
+    @http.route('/api/<model>/<id>', type='http', auth="none", methods=['DELETE'], csrf=False)
+    def delete(self, model=None, id=None):
+        """Delete existing record.
+        Basic usage:
+        import requests
+
+        headers = {
+            'charset': 'utf-8',
+            'access-token': 'access_token'
+        }
+        model = 'res.partner'
+        id = 100
+        req = requests.delete('{}/api/{}/{}'.format(base_url, model, id), headers=headers)
+        print(req.json())
+        """
+
+        try:
+            record = request.env[model].sudo().browse(id)
+            if record.read():
+                record.unlink()
+                return valid_response(None, status=204)
+            else:
+                return invalid_response('missing_record', 'record object with id %s could not be found' % id, 404)
+        except Exception as e:
+            return invalid_response('exception', str(e), 503)
+

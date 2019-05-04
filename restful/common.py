@@ -1,70 +1,119 @@
 """Common methods"""
 import ast
 import logging
-import werkzeug.wrappers
-from odoo.http import request
+
+from odoo.http import Response
+from odoo.tools import date_utils
 
 _logger = logging.getLogger(__name__)
 try:
     import simplejson as json
-    from simplejson.errors import JSONDecodeError
 except ModuleNotFoundError as identifier:
     _logger.error(identifier)
 else:
     import json
-    
 
 def valid_response(data, status=200):
     """Valid Response
     This will be return when the http request was successfully processed."""
-    data = {
-        'count': len(data),
-        'data': data
-    }
-    return werkzeug.wrappers.Response(
+
+    if data is None:
+        response = None
+    elif isinstance(data, str):
+        response = json.dumps({
+        'message': data
+    })
+    elif isinstance(data, list):
+        response = json.dumps({
+            'count': len(data),
+            'data': data
+        }, sort_keys=True, default=date_utils.json_default)
+    else:
+        response = json.dumps({
+            'data': data
+        }, sort_keys=True, default=date_utils.json_default)
+
+    return Response(
+        response,
         status=status,
-        content_type='application/json; charset=utf-8',
-        response=json.dumps(data),
+        content_type='application/json; charset=utf-8'
     )
 
-
-def invalid_response(typ, message=None, status=401):
+def invalid_response(error, message=None, status=401):
     """Invalid Response
     This will be the return value whenever the server runs into an error
     either from the client or the server."""
-    # return json.dumps({})
-    return werkzeug.wrappers.Response(
+
+    response = json.dumps({
+        'type': error,
+        'message': str(message) if str(message) else 'wrong arguments (missing validation)'
+    })
+
+    return Response(
+        response,
         status=status,
-        content_type='application/json; charset=utf-8',
-        response=json.dumps({
-            'type': typ,
-            'message': str(message) if str(message) else 'wrong arguments (missing validation)',
-        }),
+        content_type='application/json; charset=utf-8'
     )
 
+def parse_dict(obj):
+    keys = list(obj.keys())
+    if len(keys) == 0:
+        return None
 
-def extract_arguments(payloads, offset=0, limit=0, order=None):
-    """."""
-    fields, domain, payload = [], [], {}
-    data = str(payloads)[2:-2]
-    try:
-        payload = json.loads(data)
-    except JSONDecodeError as e:
-        _logger.error(e)
-    if payload.get('domain'):
-        for _domain in payload.get('domain'):
-            l, o, r = _domain
-            if o == "': '":
-                o = '='
-            elif o == "!': '":
-                o = '!='
-            domain.append(tuple([l, o, r]))
-    if payload.get('fields'):
-        fields += payload.get('fields')
-    if payload.get('offset'):
-        offset = int(payload['offset'])
-    if payload.get('limit'):
-        limit = int(payload.get('limit'))
-    if payload.get('order'):
-        order = payload.get('order')
+    key = keys[0]
+    if len(key) == 0:
+        return None
+
+    value = obj[key]
+
+    left, center, right = '', '', value
+
+    if key[-1] == '!':
+        center = '!='
+        left = key[0:-1]
+    else:
+        center = '='
+        left = key
+
+    return (left, center, right)
+
+def parse_expr(expr):
+    if isinstance(expr, tuple):
+        return expr
+    if isinstance(expr, list):
+        return tuple(expr)
+    elif isinstance(expr, dict):
+        return parse_dict(expr)
+
+def parse_list(prepared):
+    result = []
+    for expr in prepared:
+        obj = parse_expr(expr)
+        if obj:
+            result.append(obj)
+    return result
+
+def extract_arguments(payload={}):
+    """Parse "[('id','=','100')]" or {'id': '100'} notation as domain
+    """
+    domain, fields, offset, limit, order = [], [], 0, 0, None
+    _domain = payload.get('domain')
+    _fields = payload.get('fields')
+    _offset = payload.get('offset')
+    _limit  = payload.get('limit')
+    _order  = payload.get('order')
+    if _domain:
+        if isinstance(_domain, str):
+            if not (_domain[0] == '[' and _domain[-1] == ']'):
+                _domain = '[{0}]'.format(_domain)
+            _domain = ast.literal_eval(_domain)
+        domain = parse_list(_domain)
+    if _fields:
+        fields += ast.literal_eval(_fields)
+    if _offset:
+        offset = int(_offset)
+    if _limit:
+        limit  = int(_limit)
+    if _order:
+        order  = _order
     return [domain, fields, offset, limit, order]
