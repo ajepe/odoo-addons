@@ -12,7 +12,8 @@
     and to boost and enhanc Odoo speed.
 
     """,
-    "summary": """Using Redis for storing sessions is a great way to get more performance out of load balanced odoo servers.""",
+    "summary": """Using Redis for storing sessions is a great way to 
+    get more performance out of load balanced odoo servers.""",
     "website": "",
     "category": 'API',
     "auto_install": False,

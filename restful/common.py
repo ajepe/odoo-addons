@@ -12,7 +12,7 @@ except ModuleNotFoundError as identifier:
     _logger.error(identifier)
 else:
     import json
-    
+
 
 def valid_response(data, status=200):
     """Valid Response

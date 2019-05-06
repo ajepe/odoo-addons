@@ -56,7 +56,7 @@ class APIController(http.Controller):
             if id:
                 domain = [('id', '=', int(id))]
                 data = request.env[model.model].sudo().search_read(
-                domain=domain, fields=fields, offset=offset, limit=limit, order=order)
+                    domain=domain, fields=fields, offset=offset, limit=limit, order=order)
             if data:
                 return valid_response(data)
             else:
