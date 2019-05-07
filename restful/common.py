@@ -93,6 +93,13 @@ def parse_list(prepared):
             result.append(obj)
     return result
 
+def parse_domain(domain):
+    if isinstance(domain, str):
+        if not (domain[0] == '[' and domain[-1] == ']'):
+            domain = '[{0}]'.format(domain)
+        domain = ast.literal_eval(domain)
+    return domain
+
 def extract_arguments(payload={}):
     """Parse "[('id','=','100')]" or {'id': '100'} notation as domain
     """
@@ -103,11 +110,8 @@ def extract_arguments(payload={}):
     _limit  = payload.get('limit')
     _order  = payload.get('order')
     if _domain:
-        if isinstance(_domain, str):
-            if not (_domain[0] == '[' and _domain[-1] == ']'):
-                _domain = '[{0}]'.format(_domain)
-            _domain = ast.literal_eval(_domain)
-        domain = parse_list(_domain)
+        domain_list = parse_domain(domain)
+        domain = parse_list(domain_list)
     if _fields:
         fields += ast.literal_eval(_fields)
     if _offset:
