@@ -55,6 +55,37 @@ def invalid_response(error, message=None, status=401):
         content_type='application/json; charset=utf-8'
     )
 
+def prepare_response(data, one=False):
+    """Replaces ids as lists with two different keys with id and string values.
+    Like: {country_id: [1, 'United States'], company_currency: [1, 'EUR']} => {country_id: 1, country: 'United States', company_currency_id: 1, company_currency: 'EUR'}.
+    Also records in Odoo are lists, and when we need only record itself, returned first list item or None"""
+    result = None
+
+    if isinstance(data, list):
+        result = []
+        for _result in data:
+            if isinstance(_result, dict):
+                item = {}
+                for key, value in _result.items():
+                    if isinstance(value, tuple) and len(value) == 2 and isinstance(value[0], int) and isinstance(value[1], str):
+                        _int, _str = value
+                        _key = key.replace('_id', '').replace('_uid', '')
+                        _key_id = '{}_id'.format(_key)
+                        item[_key_id] = _int
+                        item[_key]    = _str
+                    else:
+                        item[key] = value
+            else:
+                item = _result
+            result.append(item)
+
+        if one:
+            if len(result) > 0:
+                result = result[0]
+            else:
+                result = None
+    return result
+
 def parse_dict(obj):
     keys = list(obj.keys())
     if len(keys) == 0:

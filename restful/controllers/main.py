@@ -4,7 +4,7 @@ import functools
 import logging
 from odoo import http
 from odoo.http import request
-from odoo.addons.restful.common import valid_response, invalid_response, extract_arguments
+from odoo.addons.restful.common import valid_response, invalid_response, prepare_response, extract_arguments
 
 _logger = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ class APIController(http.Controller):
         try:
             record = request.env[model].sudo().browse(id)
             if record.read():
-                return valid_response(record.read()[0])
+                return valid_response(prepare_response(record.read(), one=True))
             else:
                 return invalid_response('missing_record',
                                         'record object with id %s could not be found' % (id, model), 404)
@@ -124,7 +124,7 @@ class APIController(http.Controller):
         domain, fields, offset, limit, order = extract_arguments(kwargs)
         data = request.env[model].sudo().search_read(
                 domain=domain, fields=fields, offset=offset, limit=limit, order=order)
-        return valid_response(data)
+        return valid_response(prepare_response(data))
 
     @validate_token
     @validate_model
@@ -162,7 +162,7 @@ class APIController(http.Controller):
         try:
             record = request.env[model].sudo().create(kwargs)
             record.refresh()
-            return valid_response(record.read()[0])
+            return valid_response(prepare_response(record.read(), one=True))
         except Exception as e:
             return invalid_response('params', e)
 
@@ -197,7 +197,7 @@ class APIController(http.Controller):
             if record.read():
                 result = record.write(kwargs)
                 record.refresh()
-                return valid_response(record.read()[0])
+                return valid_response(prepare_response(record.read(), one=True))
             else:
                 return invalid_response('missing_record', 'record object with id %s could not be found' % id, 404)
         except Exception as e:
@@ -228,11 +228,11 @@ class APIController(http.Controller):
             if record.read():
                 _callable = action in [method for method in dir(
                     record) if callable(getattr(record, method))]
-                if record and _callable:
+                if _callable:
                     # action is a dynamic variable.
                     getattr(record, action)()
                 record.refresh()
-                return valid_response(record.read()[0])
+                return valid_response(prepare_response(record.read(), one=True))
             else:
                 return invalid_response('missing_record',
                                         'record object with id %s could not be found or %s object has no method %s' % (id, model, action), 404)
