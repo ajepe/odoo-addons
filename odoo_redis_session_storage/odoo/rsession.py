@@ -11,7 +11,7 @@ from odoo.tools.func import lazy_property
 
 
 def _check_default_session_storage():
-    enabled = tools.config.get('session_store', '').strip() == 'redis'
+    enabled = tools.config.get("session_store", "").strip() == "redis"
     return enabled
 
 
@@ -20,28 +20,23 @@ try:
 except ImportError:
     if _check_default_session_storage():
         raise ImportError(
-            'Please install package python3-redis: '
-            'apt install python3-redis or pip install redis')
+            "Please install package python3-redis: "
+            "apt install python3-redis or pip install redis"
+        )
 
 
 def parse_connection_string(con):
-    m = re.match('redis://(.*?):(.*?)@(.*?):(.*?)/(.*)', con).groups()
+    m = re.match("redis://(.*?):(.*?)@(.*?):(.*?)/(.*)", con).groups()
     user, password, server, port, dbindex = m
-    return {
-        'port': port,
-        'db': dbindex,
-        'host': server,
-        'password': password,
-    }
+    return {"port": port, "db": dbindex, "host": server, "password": password}
 
 
 class SessionRedisStore(werkzeug.contrib.sessions.SessionStore):
-
     def __init__(self, *args, **kwargs):
         super(SessionRedisStore, self).__init__(*args, **kwargs)
-        self.expire = kwargs.get('expire', 36000)
-        self.key_prefix = kwargs.get('key_prefix', '')
-        con_string = tools.config.get('redis', False)
+        self.expire = kwargs.get("expire", 36000)
+        self.key_prefix = kwargs.get("key_prefix", "")
+        con_string = tools.config.get("redis", False)
         params = parse_connection_string(con_string)
         self.redis = redis.Redis(**params)
         self._check_if_redis_server_up()
@@ -57,7 +52,7 @@ class SessionRedisStore(werkzeug.contrib.sessions.SessionStore):
         self.redis.delete(key)
 
     def _get_session_key(self, sid):
-        key = f'{self.key_prefix}{sid}'
+        key = f"{self.key_prefix}{sid}"
         return key
 
     def get(self, sid):
@@ -73,7 +68,8 @@ class SessionRedisStore(werkzeug.contrib.sessions.SessionStore):
             self.redis.ping()
         except redis.ConnectionError:
             raise redis.ConnectionError(
-                'Redis server seem to be down and not responding')
+                "Redis server seem to be down and not responding"
+            )
 
 
 if _check_default_session_storage():

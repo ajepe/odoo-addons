@@ -8,44 +8,47 @@ from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
 _logger = logging.getLogger(__name__)
 
-expires_in = 'restful.access_token_expires_in'
+expires_in = "restful.access_token_expires_in"
 
 
-def nonce(length=40, prefix='access_token'):
+def nonce(length=40, prefix="access_token"):
     rbytes = os.urandom(length)
-    return '{}_{}'.format(prefix, str(hashlib.sha1(rbytes).hexdigest()))
+    return "{}_{}".format(prefix, str(hashlib.sha1(rbytes).hexdigest()))
 
 
 class APIAccessToken(models.Model):
-    _name = 'api.access_token'
+    _name = "api.access_token"
 
-    token = fields.Char('Access Token', required=True)
-    user_id = fields.Many2one('res.users', string='User', required=True)
-    expires = fields.Datetime('Expires', required=True)
-    scope = fields.Char('Scope')
+    token = fields.Char("Access Token", required=True)
+    user_id = fields.Many2one("res.users", string="User", required=True)
+    expires = fields.Datetime("Expires", required=True)
+    scope = fields.Char("Scope")
 
     @api.multi
     def find_one_or_create_token(self, user_id=None, create=False):
         if not user_id:
             user_id = self.env.user.id
 
-        access_token = self.env['api.access_token'].sudo().search(
-            [('user_id', '=', user_id)], order='id DESC', limit=1)
+        access_token = (
+            self.env["api.access_token"]
+            .sudo()
+            .search([("user_id", "=", user_id)], order="id DESC", limit=1)
+        )
         if access_token:
             access_token = access_token[0]
             if access_token.has_expired():
                 access_token = None
         if not access_token and create:
-            expires = datetime.now() + \
-                timedelta(seconds=int(self.env.ref(expires_in).sudo().value))
+            expires = datetime.now() + timedelta(
+                seconds=int(self.env.ref(expires_in).sudo().value)
+            )
             vals = {
-                'user_id': user_id,
-                'scope': 'userinfo',
-                'expires': expires.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
-                'token': nonce(),
+                "user_id": user_id,
+                "scope": "userinfo",
+                "expires": expires.strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+                "token": nonce(),
             }
-            access_token = self.env['api.access_token'].sudo().create(vals)
-            self._cr.commit()
+            access_token = self.env["api.access_token"].sudo().create(vals)
         if not access_token:
             return None
         return access_token.token
@@ -78,6 +81,5 @@ class APIAccessToken(models.Model):
 
 
 class Users(models.Model):
-    _inherit = 'res.users'
-    token_ids = fields.One2many('api.access_token', 'user_id',
-                                string="Access Tokens")
+    _inherit = "res.users"
+    token_ids = fields.One2many("api.access_token", "user_id", string="Access Tokens")
