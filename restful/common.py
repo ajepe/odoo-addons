@@ -116,7 +116,7 @@ def parse_expr(expr):
     elif isinstance(expr, dict):
         return parse_dict(expr)
 
-def parse_list(prepared):
+def parse_domain(prepared):
     result = []
     for expr in prepared:
         obj = parse_expr(expr)
@@ -124,7 +124,7 @@ def parse_list(prepared):
             result.append(obj)
     return result
 
-def parse_domain(domain):
+def parse_list(domain):
     if isinstance(domain, str):
         if not (domain[0] == '[' and domain[-1] == ']'):
             domain = '[{0}]'.format(domain)
@@ -141,14 +141,14 @@ def extract_arguments(payload={}):
     _limit  = payload.get('limit')
     _order  = payload.get('order')
     if _domain:
-        domain_list = parse_domain(_domain)
-        domain = parse_list(domain_list)
+        domain_list = parse_list(_domain)
+        domain = parse_domain(domain_list)
     if _fields:
-        fields += ast.literal_eval(_fields)
+        fields += parse_list(_fields)
     if _offset:
         offset = int(_offset)
     if _limit:
         limit  = int(_limit)
     if _order:
-        order  = _order
+        order  = parse_list(_order) or None
     return [domain, fields, offset, limit, order]
