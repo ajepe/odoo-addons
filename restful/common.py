@@ -141,7 +141,7 @@ def extract_arguments(payload={}):
     _limit  = payload.get('limit')
     _order  = payload.get('order')
     if _domain:
-        domain_list = parse_domain(domain)
+        domain_list = parse_domain(_domain)
         domain = parse_list(domain_list)
     if _fields:
         fields += ast.literal_eval(_fields)
