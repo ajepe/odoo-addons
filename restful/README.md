@@ -67,7 +67,7 @@ query = {
     'domain': "{'id':100, 'parent_id!':true}",
     'limit': 10
 }
-req = requests.get('{}/api/{}/'.format(base_url, model), headers=headers, data=query)
+req = requests.get('{}/api/{}/'.format(base_url, model), headers=headers, params=query)
 print(req.json())
 ```
 ### [POST]

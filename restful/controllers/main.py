@@ -16,6 +16,7 @@ def validate_token(func):
         access_token = request.httprequest.headers.get('access_token')
         if not access_token:
             return invalid_response('access_token_not_found', 'missing access token in request header', 401)
+
         access_token_data = request.env['api.access_token'].sudo().search(
             [('token', '=', access_token)], order='id DESC', limit=1)
 
@@ -118,7 +119,7 @@ class APIController(http.Controller):
         #    'domain': "{'id':100, 'parent_id!':true}",
         #    'limit': 10
         #}
-        req = requests.get('{}/api/{}/'.format(base_url, model), headers=headers, data=data)
+        req = requests.get('{}/api/{}/'.format(base_url, model), headers=headers, params=data)
         print(req.json())
         """
         domain, fields, offset, limit, order = extract_arguments(kwargs)

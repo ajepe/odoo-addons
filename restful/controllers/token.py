@@ -86,8 +86,10 @@ class AccessToken(http.Controller):
         return werkzeug.wrappers.Response(
             status=200,
             content_type='application/json; charset=utf-8',
-            headers=[('Cache-Control', 'no-store'),
-                     ('Pragma', 'no-cache')],
+            headers=[
+                ('Cache-Control', 'no-store'),
+                ('Pragma', 'no-cache')
+            ],
             response=json.dumps({
                 'uid': uid,
                 'user_context': request.session.get_context() if uid else {},
