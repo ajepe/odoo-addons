@@ -2,6 +2,7 @@
 
 import functools
 import logging
+import dateutil.parser
 from odoo import http
 from odoo.http import request
 from odoo.addons.restful.common import valid_response, invalid_response, prepare_response, extract_arguments
@@ -16,7 +17,6 @@ def validate_token(func):
         access_token = request.httprequest.headers.get('access_token')
         if not access_token:
             return invalid_response('access_token_not_found', 'missing access token in request header', 401)
-
         access_token_data = request.env['api.access_token'].sudo().search(
             [('token', '=', access_token)], order='id DESC', limit=1)
 
@@ -53,6 +53,31 @@ def validate_model(func):
         if not _model:
             return invalid_response('invalid object model', 'The model %s is not available in the registry.' % model, 404)
         return func(self, *args, **kwargs)
+    return wrap
+
+def parse_data(func):
+    """."""
+    @functools.wraps(func)
+    def wrap(self, *args, **kwargs):
+        """."""
+        result = {}
+        for key, value in kwargs.items():
+            converted_value = value
+            if isinstance(value, str):
+                if value in ['true', 'True']:
+                    converted_value = True
+                elif value in ['false', 'False']:
+                    converted_value = False
+                else:
+                    try:
+                        converted_value = int(value)
+                    except Exception:
+                        try:
+                            converted_value = dateutil.parser.parse(value)
+                        except Exception:
+                            pass
+            result[key] = converted_value
+        return func(self, *args, **result)
     return wrap
 
 class APIController(http.Controller):
@@ -129,6 +154,7 @@ class APIController(http.Controller):
 
     @validate_token
     @validate_model
+    @parse_data
     @http.route('/api/<model>', type='http', auth="none", methods=['POST'], csrf=False)
     def create(self, model=None, **kwargs):
         """Create a new record.
@@ -171,6 +197,7 @@ class APIController(http.Controller):
     @validate_token
     @validate_id
     @validate_model
+    @parse_data
     @http.route('/api/<model>/<id>', type='http', auth="none", methods=['PUT'], csrf=False)
     def put(self, model=None, id=None, **kwargs):
         """Update existing record.
@@ -192,7 +219,6 @@ class APIController(http.Controller):
         req = requests.put('{}/api/{}/{}'.format(base_url, model, id), headers=headers, data=data)
         print(req.json())
         """
-
         try:
             record = request.env[model].sudo().browse(id)
             if record.read():
@@ -207,6 +233,7 @@ class APIController(http.Controller):
     @validate_token
     @validate_id
     @validate_model
+    @parse_data
     @http.route('/api/<model>/<id>/<action>', type='http', auth="none", methods=['PATCH'], csrf=False)
     def patch(self, model=None, id=None, action=None, **kwargs):
         """Call action for model.
@@ -268,4 +295,3 @@ class APIController(http.Controller):
                 return invalid_response('missing_record', 'record object with id %s could not be found' % id, 404)
         except Exception as e:
             return invalid_response('exception', str(e), 503)
-
