@@ -150,5 +150,6 @@ def extract_arguments(payload={}):
     if _limit:
         limit  = int(_limit)
     if _order:
-        order  = parse_list(_order) or None
+        parsed_order = parse_list(_order)
+        order  = ','.join(parsed_order) if parsed_order else None
     return [domain, fields, offset, limit, order]

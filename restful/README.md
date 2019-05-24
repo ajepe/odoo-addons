@@ -50,7 +50,7 @@ print(req.json())
 headers['content-type'] = 'application/x-www-form-urlencoded'
 query = {
     'domain': "[('supplier','=',True),('parent_id','=', False)]",
-    'order': 'name asc',
+    'order': ['name asc', 'id desc'], # or 'name asc, id desc'
     'limit': 10,
     'offset': 0,
     'fields': "['name', 'supplier', 'parent_id']"
@@ -72,9 +72,6 @@ print(req.json())
 ```
 ### [POST]
 ```python
-
-**POST request**
-```python
 model = 'res.partner'
 data = {
     'name': 'Babatope Ajepe',
@@ -95,7 +92,7 @@ req = requests.post('{}/api/{}/'.format(base_url, model), headers=headers, data=
 print(req.json())
 ```
 
-**PUT Request**
+### [PUT]
 ```python
 model = 'res.partner'
 id = 100
@@ -108,7 +105,7 @@ req = requests.put('{}/api/{}/{}'.format(base_url, model, id), headers=headers, 
 print(req.json())
 ```
 
-**DELETE Request**
+### [DELETE]
 ```python
 model = 'res.partner'
 id = 100

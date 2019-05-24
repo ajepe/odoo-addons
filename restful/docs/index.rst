@@ -65,7 +65,7 @@ To delete acccess-token
     headers['content-type'] = 'application/x-www-form-urlencoded'
     query = {
         'domain': "[('supplier','=',True),('parent_id','=', False)]",
-        'order': 'name asc',
+        'order': ['name asc', 'id'], # or 'name asc, id'
         'limit': 10,
         'offset': 0,
         'fields': "['name', 'supplier', 'parent_id']"
@@ -88,10 +88,6 @@ To delete acccess-token
 [POST]
 ~~~~~~
 
-\`\`\`python
-
-**POST request**
-
 .. code:: python
 
     model = 'res.partner'
@@ -113,7 +109,8 @@ To delete acccess-token
     req = requests.post('{}/api/{}/'.format(base_url, model), headers=headers, data=data)
     print(req.json())
 
-**PUT Request**
+[PUT]
+~~~~~~
 
 .. code:: python
 
@@ -127,7 +124,7 @@ To delete acccess-token
     req = requests.put('{}/api/{}/{}'.format(base_url, model, id), headers=headers, data=data)
     print(req.json())
 
-**DELETE Request**
+[DELETE]
 
 .. code:: python
 
