@@ -2,13 +2,14 @@
 
 import functools
 import logging
+
 from odoo import http
-from odoo.http import request
 from odoo.addons.restful.common import (
-    valid_response,
-    invalid_response,
     extract_arguments,
+    invalid_response,
+    valid_response,
 )
+from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 

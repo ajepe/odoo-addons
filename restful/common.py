@@ -1,7 +1,9 @@
 """Common methods"""
 import ast
 import logging
+
 import werkzeug.wrappers
+
 from odoo.http import request
 
 _logger = logging.getLogger(__name__)

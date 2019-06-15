@@ -1,10 +1,12 @@
 # Part of odoo. See LICENSE file for full copyright and licensing details.
-import logging
 import json
+import logging
+
 import werkzeug.wrappers
+
 from odoo import http
-from odoo.http import request
 from odoo.addons.restful.common import invalid_response, valid_response
+from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 

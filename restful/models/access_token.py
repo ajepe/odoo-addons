@@ -1,9 +1,9 @@
-import os
 import hashlib
 import logging
-
-from odoo import models, fields, api
+import os
 from datetime import datetime, timedelta
+
+from odoo import api, fields, models
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
 _logger = logging.getLogger(__name__)
