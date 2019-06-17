@@ -13,9 +13,23 @@ except ModuleNotFoundError as identifier:
 else:
     import json
 
+def token_response(data):
+    """Token Response
+    This will be return when token request was successfully processed."""
+    return Response(
+        json.dumps(data),
+        status=200,
+        content_type='application/json; charset=utf-8',
+        headers=[
+            ('Cache-Control', 'no-store'),
+            ('Pragma', 'no-cache')
+        ]
+    )
+
 def valid_response(data, status=200):
     """Valid Response
     This will be return when the http request was successfully processed."""
+    response = None
 
     if data is None:
         response = None
