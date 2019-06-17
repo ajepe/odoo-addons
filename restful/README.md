@@ -20,7 +20,7 @@ query = {
 }
 base_url = 'http://theninnercicle.com.ng'
 
-req = requests.get('{}/api/auth/token'.format(base_url), params=query, headers=headers)
+req = requests.post('{}/api/auth/token'.format(base_url), data=data, headers=headers)
 content = req.json()
 
 headers['access-token'] = content['access_token'] # add the access token to the header

@@ -13,8 +13,8 @@ expires_in = 'restful.access_token_expires_in'
 class AccessToken(http.Controller):
     """."""
 
-    @http.route('/api/auth/token', methods=['GET'], type='http', auth='none', csrf=False)
-    def token(self, **post):
+    @http.route('/api/auth/token', methods=['POST'], type='http', auth='none', csrf=False)
+    def token(self, **kwargs):
         """The token URL to be used for getting the access_token:
 
         Args:
@@ -34,25 +34,21 @@ class AccessToken(http.Controller):
                'db': 'galago.ng'
             }
            base_url = 'http://odoo.ng'
-           eq = requests.post(
+           req = requests.post(
                '{}/api/auth/token'.format(base_url), data=data, headers=headers)
            content = json.loads(req.content.decode('utf-8'))
            headers.update(access-token=content.get('access_token'))
         """
-        params = ['db', 'login', 'password']
-        params = {key: post.get(key) for key in params if post.get(key)}
-        db, username, password = params.get('db'), post.get('login'), post.get('password')
-        _credentials_includes_in_body = all([db, username, password])
-        if not _credentials_includes_in_body:
-            # The request post body is empty the credetials maybe passed via the headers.
-            headers = request.httprequest.headers
-            db = headers.get('db')
-            username = headers.get('login')
-            password = headers.get('password')
-            _credentials_includes_in_headers = all([db, username, password])
-            if not _credentials_includes_in_headers:
-                # Empty 'db' or 'username' or 'password:
-                return invalid_response('missing error', 'either of the following are missing [db, username,password]', 403)
+
+        try:
+            db, username, password = kwargs['db'], kwargs['login'], kwargs['password']
+        except Exception as e:
+            # Invalid database:
+            error = 'missing'
+            info = 'either of the following are missing [db, username,password]'
+            status = 403
+            _logger.error(info)
+            return invalid_response(error, info, status)
 
         # Login in odoo database:
         try:
@@ -87,7 +83,7 @@ class AccessToken(http.Controller):
         })
 
     @http.route('/api/auth/token', methods=['DELETE'], type='http', auth='none', csrf=False)
-    def delete(self, **post):
+    def delete(self, **kwargs):
         """."""
         request_token = request.httprequest.headers.get('access_token')
         access_token  = request.env['api.access_token'].sudo().search([('token', '=', request_token)])
@@ -96,8 +92,10 @@ class AccessToken(http.Controller):
             info = 'No access token was provided in request!'
             _logger.error(info)
             return invalid_response(error, info, 400)
+
         for token in access_token:
             token.unlink()
+
         # Successful response:
         return valid_response({
             'desc': 'token successfully deleted',
