@@ -1,17 +1,12 @@
 """Common methods"""
 import ast
 import logging
+import json
 
 from odoo.http import Response
 from odoo.tools import date_utils
 
 _logger = logging.getLogger(__name__)
-try:
-    import simplejson as json
-except ModuleNotFoundError as identifier:
-    _logger.error(identifier)
-else:
-    import json
 
 def token_response(data):
     """Token Response
