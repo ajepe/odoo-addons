@@ -1,5 +1,5 @@
 # Collection of Odoo Addons
-[![Build Status](https://travis-ci.com/ajepe/odoo-addons.svg?branch=12.0)](https://travis-ci.com/ajepe/odoo-addons)
+[![Build Status](https://travis-ci.com/ajepe/odoo-addons.svg?branch=12.0)](https://travis-ci.com/ajepe/odoo-addons, 'Build Status')
 
 | Module Name        | Descriptions       | Versions  |
 | ------------- |:-------------:| -----:|
