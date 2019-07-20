@@ -1,5 +1,4 @@
 # Byte-compiled / optimized / DLL files
-testing_req.py
 __pycache__/
 *.py[cod]
 *$py.class
@@ -15,8 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/
@@ -103,3 +100,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+
+# Editor
+.vscode
