@@ -3,8 +3,6 @@
 
 import json
 import re
-import sys
-from urllib import parse
 
 import werkzeug.contrib.sessions
 
@@ -54,7 +52,7 @@ class SessionRedisStore(werkzeug.contrib.sessions.SessionStore):
         self.redis.delete(key)
 
     def _get_session_key(self, sid):
-        key = f"{self.key_prefix}{sid}"
+        key = "%s%s" % (self.key_prefix, sid)
         return key
 
     def get(self, sid):

@@ -1,19 +1,14 @@
-"""Common methods"""
-import ast
 import logging
 
 import werkzeug.wrappers
 
-from odoo.http import request
-
 _logger = logging.getLogger(__name__)
+
 try:
     import simplejson as json
     from simplejson.errors import JSONDecodeError
-except ModuleNotFoundError as identifier:
+except ImportError as identifier:
     _logger.error(identifier)
-else:
-    import json
 
 
 def valid_response(data, status=200):
