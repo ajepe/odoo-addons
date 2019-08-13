@@ -1,4 +1,5 @@
 import logging
+import datetime
 
 import werkzeug.wrappers
 
@@ -18,7 +19,7 @@ def valid_response(data, status=200):
     return werkzeug.wrappers.Response(
         status=status,
         content_type="application/json; charset=utf-8",
-        response=json.dumps(data),
+        response=json.dumps(data, default=datetime.datetime.isoformat),
     )
 
 
@@ -37,7 +38,7 @@ def invalid_response(typ, message=None, status=401):
                 if str(message)
                 else "wrong arguments (missing validation)",
             }
-        ),
+        ),default=datetime.datetime.isoformat
     )
 
 

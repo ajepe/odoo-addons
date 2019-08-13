@@ -80,7 +80,7 @@ class AccessToken(http.Controller):
             info = "The database name is not valid {}".format((e))
             error = "invalid_database"
             _logger.error(info)
-            return invalid_response("wrong database name", error, info)
+            return invalid_response("wrong database name", error, 403)
 
         uid = request.session.uid
         # odoo login failed:
