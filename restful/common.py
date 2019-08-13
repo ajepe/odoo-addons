@@ -37,8 +37,8 @@ def invalid_response(typ, message=None, status=401):
                 "message": str(message)
                 if str(message)
                 else "wrong arguments (missing validation)",
-            }
-        ),default=datetime.datetime.isoformat
+            },default=datetime.datetime.isoformat
+        ),
     )
 
 
