@@ -12,6 +12,11 @@ except ImportError as identifier:
     _logger.error(identifier)
 
 
+def default(o):
+    if isinstance(o, (datetime.date, datetime.datetime)):
+        return o.isoformat()
+
+
 def valid_response(data, status=200):
     """Valid Response
     This will be return when the http request was successfully processed."""
@@ -19,7 +24,7 @@ def valid_response(data, status=200):
     return werkzeug.wrappers.Response(
         status=status,
         content_type="application/json; charset=utf-8",
-        response=json.dumps(data, default=datetime.datetime.isoformat),
+        response=json.dumps(data, default=default),
     )
 
 
@@ -37,7 +42,7 @@ def invalid_response(typ, message=None, status=401):
                 "message": str(message)
                 if str(message)
                 else "wrong arguments (missing validation)",
-            },default=datetime.datetime.isoformat
+            }, default=datetime.datetime.isoformat
         ),
     )
 
