@@ -1,15 +1,11 @@
 import logging
 import datetime
+import json
+import ast
 
 import werkzeug.wrappers
 
 _logger = logging.getLogger(__name__)
-
-try:
-    import simplejson as json
-    from simplejson.errors import JSONDecodeError
-except ImportError as identifier:
-    _logger.error(identifier)
 
 
 def default(o):
@@ -42,27 +38,18 @@ def invalid_response(typ, message=None, status=401):
                 "message": str(message)
                 if str(message)
                 else "wrong arguments (missing validation)",
-            }, default=datetime.datetime.isoformat
+            },
+            default=datetime.datetime.isoformat,
         ),
     )
 
 
 def extract_arguments(payloads, offset=0, limit=0, order=None):
-    """."""
+    """Parse additional data  sent along request."""
     fields, domain, payload = [], [], {}
-    data = str(payloads)[2:-2]
-    try:
-        payload = json.loads(data)
-    except JSONDecodeError as e:
-        _logger.error(e)
-    if payload.get("domain"):
-        for _domain in payload.get("domain"):
-            l, o, r = _domain
-            if o == "': '":
-                o = "="
-            elif o == "!': '":
-                o = "!="
-            domain.append(tuple([l, o, r]))
+
+    if payloads.get("domain", None):
+        domain = ast.literal_eval(payloads.get("domain"))
     if payload.get("fields"):
         fields += payload.get("fields")
     if payload.get("offset"):

@@ -80,3 +80,4 @@ print(p.content)
 p = requests.delete('http://theninnercicle.com.ng/api/res.partner/68', headers=headers)
 print(p.content)
 ```
+req = requests.get('{}/api/sale.order/'.format(base_url), headers=headers,data={'limit': 10, 'domain': []})
