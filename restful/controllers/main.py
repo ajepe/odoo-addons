@@ -2,6 +2,7 @@
 
 import functools
 import logging
+from odoo.exceptions import AccessError
 
 from odoo import http
 from odoo.addons.restful.common import (
@@ -60,26 +61,13 @@ class APIController(http.Controller):
     @validate_token
     @http.route(_routes, type="http", auth="none", methods=["GET"], csrf=False)
     def get(self, model=None, id=None, **payload):
-        ioc_name = model
-        model = request.env[self._model].sudo().search([("model", "=", model)], limit=1)
-        if model:
-            domain, fields, offset, limit, order = extract_arguments(payload)
-            data = (
-                request.env[model.model]
-                .sudo()
-                .search_read(
-                    domain=domain,
-                    fields=fields,
-                    offset=offset,
-                    limit=limit,
-                    order=order,
-                )
-            )
-            if id:
-                domain = [("id", "=", int(id))]
+        try:
+            ioc_name = model
+            model = request.env[self._model].search([("model", "=", model)], limit=1)
+            if model:
+                domain, fields, offset, limit, order = extract_arguments(payload)
                 data = (
                     request.env[model.model]
-                    .sudo()
                     .search_read(
                         domain=domain,
                         fields=fields,
@@ -88,14 +76,29 @@ class APIController(http.Controller):
                         order=order,
                     )
                 )
-            if data:
-                return valid_response(data)
-            else:
-                return valid_response(data)
-        return invalid_response(
-            "invalid object model",
-            "The model %s is not available in the registry." % ioc_name,
-        )
+                if id:
+                    domain = [("id", "=", int(id))]
+                    data = (
+                        request.env[model.model]
+                        .search_read(
+                            domain=domain,
+                            fields=fields,
+                            offset=offset,
+                            limit=limit,
+                            order=order,
+                        )
+                    )
+                if data:
+                    return valid_response(data)
+                else:
+                    return valid_response(data)
+            return invalid_response(
+                "invalid object model",
+                "The model %s is not available in the registry." % ioc_name,
+            )
+        except AccessError as e:
+            return invalid_response("Access error", "Error: %s" % e.name)
+
 
     @validate_token
     @http.route(_routes, type="http", auth="none", methods=["POST"], csrf=False)
