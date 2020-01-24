@@ -132,11 +132,17 @@ class APIController(http.Controller):
 
         """
         ioc_name = model
-        model = request.env[self._model].sudo().search([("model", "=", model)], limit=1)
+        model = request.env[self._model].search([("model", "=", model)], limit=1)
         if model:
             try:
-                resource = request.env[model.model].sudo().create(payload)
+                # changing IDs from string to int.
+                for k in payload:
+                    if '_id' in k and payload[k].isdigit():
+                        payload[k] = int(payload[k])
+                        
+                resource = request.env[model.model].create(payload)
             except Exception as e:
+                request.env.cr.rollback()
                 return invalid_response("params", e)
             else:
                 data = {"id": resource.id}
@@ -171,6 +177,7 @@ class APIController(http.Controller):
         try:
             request.env[_model.model].sudo().browse(_id).write(payload)
         except Exception as e:
+            request.env.cr.rollback()
             return invalid_response("exception", e.name)
         else:
             return valid_response(
@@ -198,6 +205,7 @@ class APIController(http.Controller):
                     404,
                 )
         except Exception as e:
+            request.env.cr.rollback()
             return invalid_response("exception", e.name, 503)
         else:
             return valid_response("record %s has been successfully deleted" % record.id)
