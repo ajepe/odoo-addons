@@ -50,12 +50,12 @@ def extract_arguments(payloads, offset=0, limit=0, order=None):
 
     if payloads.get("domain", None):
         domain = ast.literal_eval(payloads.get("domain"))
-    if payload.get("fields"):
-        fields += payload.get("fields")
-    if payload.get("offset"):
-        offset = int(payload["offset"])
-    if payload.get("limit"):
-        limit = int(payload.get("limit"))
-    if payload.get("order"):
-        order = payload.get("order")
+    if payloads.get("fields"):
+        fields += payloads.get("fields")
+    if payloads.get("offset"):
+        offset = int(payloads.get("offset"))
+    if payloads.get("limit"):
+        limit = int(payloads.get("limit"))
+    if payloads.get("order"):
+        order = payloads.get("order")
     return [domain, fields, offset, limit, order]
