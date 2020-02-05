@@ -7,6 +7,7 @@ import werkzeug.wrappers
 from odoo import http
 from odoo.addons.restful.common import invalid_response, valid_response
 from odoo.http import request
+from odoo.exceptions import AccessError, AccessDenied
 
 _logger = logging.getLogger(__name__)
 
@@ -75,6 +76,10 @@ class AccessToken(http.Controller):
         # Login in odoo database:
         try:
             request.session.authenticate(db, username, password)
+        except AccessError as aee:
+            return invalid_response("Access error", "Error: %s" % aee.name)
+        except AccessDenied as ade:
+            return invalid_response("Access denied", "Login, password or db invalid")
         except Exception as e:
             # Invalid database:
             info = "The database name is not valid {}".format((e))
