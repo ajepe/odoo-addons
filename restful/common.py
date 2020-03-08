@@ -18,9 +18,7 @@ def valid_response(data, status=200):
     This will be return when the http request was successfully processed."""
     data = {"count": len(data), "data": data}
     return werkzeug.wrappers.Response(
-        status=status,
-        content_type="application/json; charset=utf-8",
-        response=json.dumps(data, default=default),
+        status=status, content_type="application/json; charset=utf-8", response=json.dumps(data, default=default),
     )
 
 
@@ -33,12 +31,7 @@ def invalid_response(typ, message=None, status=401):
         status=status,
         content_type="application/json; charset=utf-8",
         response=json.dumps(
-            {
-                "type": typ,
-                "message": str(message)
-                if str(message)
-                else "wrong arguments (missing validation)",
-            },
+            {"type": typ, "message": str(message) if str(message) else "wrong arguments (missing validation)",},
             default=datetime.datetime.isoformat,
         ),
     )
@@ -46,16 +39,19 @@ def invalid_response(typ, message=None, status=401):
 
 def extract_arguments(payloads, offset=0, limit=0, order=None):
     """Parse additional data  sent along request."""
+    payloads = payloads["payload"]
     fields, domain, payload = [], [], {}
 
     if payloads.get("domain", None):
         domain = ast.literal_eval(payloads.get("domain"))
     if payloads.get("fields"):
-        fields += payloads.get("fields")
+        fields = ast.literal_eval(payloads.get("fields"))
     if payloads.get("offset"):
         offset = int(payloads.get("offset"))
     if payloads.get("limit"):
         limit = int(payloads.get("limit"))
     if payloads.get("order"):
         order = payloads.get("order")
-    return [domain, fields, offset, limit, order]
+    filters = [domain, fields, offset, limit, order]
+
+    return filters

@@ -23,24 +23,13 @@ def validate_token(func):
         """."""
         access_token = request.httprequest.headers.get("access_token")
         if not access_token:
-            return invalid_response(
-                "access_token_not_found", "missing access token in request header", 401
-            )
+            return invalid_response("access_token_not_found", "missing access token in request header", 401)
         access_token_data = (
-            request.env["api.access_token"]
-            .sudo()
-            .search([("token", "=", access_token)], order="id DESC", limit=1)
+            request.env["api.access_token"].sudo().search([("token", "=", access_token)], order="id DESC", limit=1)
         )
 
-        if (
-            access_token_data.find_one_or_create_token(
-                user_id=access_token_data.user_id.id
-            )
-            != access_token
-        ):
-            return invalid_response(
-                "access_token", "token seems to have expired or invalid", 401
-            )
+        if access_token_data.find_one_or_create_token(user_id=access_token_data.user_id.id) != access_token:
+            return invalid_response("access_token", "token seems to have expired or invalid", 401)
 
         request.session.uid = access_token_data.user_id.id
         request.uid = access_token_data.user_id.id
@@ -66,39 +55,24 @@ class APIController(http.Controller):
             model = request.env[self._model].search([("model", "=", model)], limit=1)
             if model:
                 domain, fields, offset, limit, order = extract_arguments(payload)
-                data = (
-                    request.env[model.model]
-                    .search_read(
-                        domain=domain,
-                        fields=fields,
-                        offset=offset,
-                        limit=limit,
-                        order=order,
-                    )
+                data = request.env[model.model].search_read(
+                    domain=domain, fields=fields, offset=offset, limit=limit, order=order,
                 )
                 if id:
                     domain = [("id", "=", int(id))]
-                    data = (
-                        request.env[model.model]
-                        .search_read(
-                            domain=domain,
-                            fields=fields,
-                            offset=offset,
-                            limit=limit,
-                            order=order,
-                        )
+                    data = request.env[model.model].search_read(
+                        domain=domain, fields=fields, offset=offset, limit=limit, order=order,
                     )
                 if data:
                     return valid_response(data)
                 else:
                     return valid_response(data)
             return invalid_response(
-                "invalid object model",
-                "The model %s is not available in the registry." % ioc_name,
+                "invalid object model", "The model %s is not available in the registry." % ioc_name,
             )
         except AccessError as e:
-            return invalid_response("Access error", "Error: %s" % e.name)
 
+            return invalid_response("Access error", "Error: %s" % e.name)
 
     @validate_token
     @http.route(_routes, type="http", auth="none", methods=["POST"], csrf=False)
@@ -131,48 +105,47 @@ class APIController(http.Controller):
                             base_url, headers=headers, data=data)
 
         """
+        import ast
+
+        payload = payload.get("payload", {})
         ioc_name = model
         model = request.env[self._model].search([("model", "=", model)], limit=1)
+        values = {}
         if model:
             try:
                 # changing IDs from string to int.
-                for k in payload:
-                    if '_id' in k and payload[k].isdigit():
-                        payload[k] = int(payload[k])
-                        
-                resource = request.env[model.model].create(payload)
+                for k, v in payload.items():
+
+                    if "__api__" in k:
+                        values[k[7:]] = ast.literal_eval(v)
+                    else:
+                        values[k] = v
+
+                resource = request.env[model.model].create(values)
             except Exception as e:
                 request.env.cr.rollback()
                 return invalid_response("params", e)
             else:
-                data = {"id": resource.id}
+                data = resource.read()
                 if resource:
                     return valid_response(data)
                 else:
                     return valid_response(data)
-        return invalid_response(
-            "invalid object model",
-            "The model %s is not available in the registry." % ioc_name,
-        )
+        return invalid_response("invalid object model", "The model %s is not available in the registry." % ioc_name,)
 
     @validate_token
     @http.route(_routes, type="http", auth="none", methods=["PUT"], csrf=False)
     def put(self, model=None, id=None, **payload):
         """."""
+        payload = payload.get('payload', {})
         try:
             _id = int(id)
         except Exception as e:
-            return invalid_response(
-                "invalid object id", "invalid literal %s for id with base " % id
-            )
-        _model = (
-            request.env[self._model].sudo().search([("model", "=", model)], limit=1)
-        )
+            return invalid_response("invalid object id", "invalid literal %s for id with base " % id)
+        _model = request.env[self._model].sudo().search([("model", "=", model)], limit=1)
         if not _model:
             return invalid_response(
-                "invalid object model",
-                "The model %s is not available in the registry." % model,
-                404,
+                "invalid object model", "The model %s is not available in the registry." % model, 404,
             )
         try:
             request.env[_model.model].sudo().browse(_id).write(payload)
@@ -180,9 +153,7 @@ class APIController(http.Controller):
             request.env.cr.rollback()
             return invalid_response("exception", e.name)
         else:
-            return valid_response(
-                "update %s record with id %s successfully!" % (_model.model, _id)
-            )
+            return valid_response("update %s record with id %s successfully!" % (_model.model, _id))
 
     @validate_token
     @http.route(_routes, type="http", auth="none", methods=["DELETE"], csrf=False)
@@ -191,19 +162,13 @@ class APIController(http.Controller):
         try:
             _id = int(id)
         except Exception as e:
-            return invalid_response(
-                "invalid object id", "invalid literal %s for id with base " % id
-            )
+            return invalid_response("invalid object id", "invalid literal %s for id with base " % id)
         try:
             record = request.env[model].sudo().search([("id", "=", _id)])
             if record:
                 record.unlink()
             else:
-                return invalid_response(
-                    "missing_record",
-                    "record object with id %s could not be found" % _id,
-                    404,
-                )
+                return invalid_response("missing_record", "record object with id %s could not be found" % _id, 404,)
         except Exception as e:
             request.env.cr.rollback()
             return invalid_response("exception", e.name, 503)
@@ -217,22 +182,17 @@ class APIController(http.Controller):
         try:
             _id = int(id)
         except Exception as e:
-            return invalid_response(
-                "invalid object id", "invalid literal %s for id with base " % id
-            )
+            return invalid_response("invalid object id", "invalid literal %s for id with base " % id)
         try:
             record = request.env[model].sudo().search([("id", "=", _id)])
-            _callable = action in [
-                method for method in dir(record) if callable(getattr(record, method))
-            ]
+            _callable = action in [method for method in dir(record) if callable(getattr(record, method))]
             if record and _callable:
                 # action is a dynamic variable.
                 getattr(record, action)()
             else:
                 return invalid_response(
                     "missing_record",
-                    "record object with id %s could not be found or %s object has no method %s"
-                    % (_id, model, action),
+                    "record object with id %s could not be found or %s object has no method %s" % (_id, model, action),
                     404,
                 )
         except Exception as e:

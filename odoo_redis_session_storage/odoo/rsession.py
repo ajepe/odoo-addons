@@ -19,10 +19,7 @@ try:
     import redis
 except ImportError:
     if _check_default_session_storage():
-        raise ImportError(
-            "Please install package python3-redis: "
-            "apt install python3-redis or pip install redis"
-        )
+        raise ImportError("Please install package python3-redis: " "apt install python3-redis or pip install redis")
 
 
 def parse_connection_string(con):
@@ -67,9 +64,7 @@ class SessionRedisStore(werkzeug.contrib.sessions.SessionStore):
         try:
             self.redis.ping()
         except redis.ConnectionError:
-            raise redis.ConnectionError(
-                "Redis server seem to be down and not responding"
-            )
+            raise redis.ConnectionError("Redis server seem to be down and not responding")
 
 
 if _check_default_session_storage():

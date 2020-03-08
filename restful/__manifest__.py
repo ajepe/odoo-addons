@@ -13,12 +13,7 @@ With use of this module user can enable REST API in any Odoo applications/module
 For detailed example of REST API refer https://ajepe.github.io/restful-api-for-odoo
 """,
     "depends": ["web"],
-    "data": [
-        "data/ir_config_param.xml",
-        "views/ir_model.xml",
-        "views/res_users.xml",
-        "security/ir.model.access.csv",
-    ],
+    "data": ["data/ir_config_param.xml", "views/ir_model.xml", "views/res_users.xml", "security/ir.model.access.csv",],
     "images": ["static/description/main_screenshot.png"],
     "license": "LGPL-3",
     "installable": True,

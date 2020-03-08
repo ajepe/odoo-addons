@@ -22,9 +22,7 @@ class AccessToken(http.Controller):
         self._token = request.env["api.access_token"]
         self._expires_in = request.env.ref(expires_in).sudo().value
 
-    @http.route(
-        "/api/auth/token", methods=["GET"], type="http", auth="none", csrf=False
-    )
+    @http.route("/api/auth/token", methods=["GET"], type="http", auth="none", csrf=False)
     def token(self, **post):
         """The token URL to be used for getting the access_token:
 
@@ -69,9 +67,7 @@ class AccessToken(http.Controller):
             if not _credentials_includes_in_headers:
                 # Empty 'db' or 'username' or 'password:
                 return invalid_response(
-                    "missing error",
-                    "either of the following are missing [db, username,password]",
-                    403,
+                    "missing error", "either of the following are missing [db, username,password]", 403,
                 )
         # Login in odoo database:
         try:
@@ -107,15 +103,14 @@ class AccessToken(http.Controller):
                     "uid": uid,
                     "user_context": request.session.get_context() if uid else {},
                     "company_id": request.env.user.company_id.id if uid else None,
+                    "company_ids": request.env.user.company_ids.ids if uid else None,
                     "access_token": access_token,
                     "expires_in": self._expires_in,
                 }
             ),
         )
 
-    @http.route(
-        "/api/auth/token", methods=["DELETE"], type="http", auth="none", csrf=False
-    )
+    @http.route("/api/auth/token", methods=["DELETE"], type="http", auth="none", csrf=False)
     def delete(self, **post):
         """."""
         _token = request.env["api.access_token"]
@@ -123,12 +118,10 @@ class AccessToken(http.Controller):
         access_token = _token.search([("token", "=", access_token)])
         if not access_token:
             info = "No access token was provided in request!"
-            error = "no_access_token"
+            error = "Access token is missing in the request header"
             _logger.error(info)
             return invalid_response(400, error, info)
         for token in access_token:
             token.unlink()
         # Successful response:
-        return valid_response(
-            200, {"desc": "token successfully deleted", "delete": True}
-        )
+        return valid_response([{"desc": "access token successfully deleted", "delete": True}])

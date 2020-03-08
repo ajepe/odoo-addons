@@ -18,30 +18,25 @@ def nonce(length=40, prefix="access_token"):
 
 class APIAccessToken(models.Model):
     _name = "api.access_token"
+    _description = "API Access Token"
 
     token = fields.Char("Access Token", required=True)
     user_id = fields.Many2one("res.users", string="User", required=True)
-    expires = fields.Datetime("Expires", required=True)
-    scope = fields.Char("Scope")
+    expires = fields.Datetime(string="Expires", required=True)
+    scope = fields.Char(string="Scope")
 
     @api.multi
     def find_one_or_create_token(self, user_id=None, create=False):
         if not user_id:
             user_id = self.env.user.id
 
-        access_token = (
-            self.env["api.access_token"]
-            .sudo()
-            .search([("user_id", "=", user_id)], order="id DESC", limit=1)
-        )
+        access_token = self.env["api.access_token"].sudo().search([("user_id", "=", user_id)], order="id DESC", limit=1)
         if access_token:
             access_token = access_token[0]
             if access_token.has_expired():
                 access_token = None
         if not access_token and create:
-            expires = datetime.now() + timedelta(
-                seconds=int(self.env.ref(expires_in).sudo().value)
-            )
+            expires = datetime.now() + timedelta(seconds=int(self.env.ref(expires_in).sudo().value))
             vals = {
                 "user_id": user_id,
                 "scope": "userinfo",
