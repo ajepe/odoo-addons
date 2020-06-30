@@ -4,4 +4,4 @@
 | Module       | Descriptions       | Available in version  |
 | ------------- |:-------------:| -----:|
 | resful    | Restful API For Odoo  | 10.0, 11.0, 12.0 |
-| odoo_redis_session_storage    | Redis Session Store"  | 11.0, 12.0 |
+

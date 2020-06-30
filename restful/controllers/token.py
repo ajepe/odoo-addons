@@ -104,6 +104,7 @@ class AccessToken(http.Controller):
                     "user_context": request.session.get_context() if uid else {},
                     "company_id": request.env.user.company_id.id if uid else None,
                     "company_ids": request.env.user.company_ids.ids if uid else None,
+                    "partner_id": request.env.user.partner_id.id,
                     "access_token": access_token,
                     "expires_in": self._expires_in,
                 }

@@ -1,32 +1,11 @@
 ### Odoo RESTful API(restful)
 
-This is an HTTP framework that only cares about generating an HTTP response for each HTTP
-request. 
-In other to use this module, a basic understating of Odoo RPC interface is required(though not that neccessary) especially when dealing with Many2many and One2many relationship. The implementation sits on the existing Odoo RPC features, data structures  and format when creating or delecting Odoo's records are still applicable. I will be demostrating the usage using python request library.
+Basic understating of Odoo  is required in other to make good use of this module 
 
 #### Access token request
 An access token is required in other to be able to perform any operations and ths token once generated should alway be send a long side any subsequents request.
 ```python
-import requests, json
 
-headers = {
-    'content-type': 'application/x-www-form-urlencoded',
-    'charset':'utf-8'
-}
-
-data = {
-    'login': 'admin',
-    'password': 'admin',
-    'db': 'demo_db'
-}
-base_url = 'http://theninnercicle.com.ng'
-
-req = requests.get('{}/api/auth/token'.format(base_url), data=data, headers=headers)
-
-content = json.loads(req.content.decode('utf-8'))
-
-headers['access-token'] = content.get('access_token') # add the access token to the header
-print(headers)
 ```
 ### To delete acccess-token
 

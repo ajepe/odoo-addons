@@ -58,6 +58,7 @@ class APIController(http.Controller):
                 data = request.env[model.model].search_read(
                     domain=domain, fields=fields, offset=offset, limit=limit, order=order,
                 )
+                print(data)
                 if id:
                     domain = [("id", "=", int(id))]
                     data = request.env[model.model].search_read(
@@ -179,10 +180,12 @@ class APIController(http.Controller):
     @http.route(_routes, type="http", auth="none", methods=["PATCH"], csrf=False)
     def patch(self, model=None, id=None, action=None, **payload):
         """."""
+        payload = payload.get('payload')
+        action = action if action else payload.get('_method')
         try:
             _id = int(id)
         except Exception as e:
-            return invalid_response("invalid object id", "invalid literal %s for id with base " % id)
+            return invalid_response("invalid object id", "invalid literal %s for id with base" % id)
         try:
             record = request.env[model].sudo().search([("id", "=", _id)])
             _callable = action in [method for method in dir(record) if callable(getattr(record, method))]

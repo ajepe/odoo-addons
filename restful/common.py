@@ -11,12 +11,15 @@ _logger = logging.getLogger(__name__)
 def default(o):
     if isinstance(o, (datetime.date, datetime.datetime)):
         return o.isoformat()
+    if isinstance(o, bytes):
+        return str(o)
 
 
 def valid_response(data, status=200):
     """Valid Response
     This will be return when the http request was successfully processed."""
     data = {"count": len(data), "data": data}
+    print(data)
     return werkzeug.wrappers.Response(
         status=status, content_type="application/json; charset=utf-8", response=json.dumps(data, default=default),
     )
@@ -39,7 +42,7 @@ def invalid_response(typ, message=None, status=401):
 
 def extract_arguments(payloads, offset=0, limit=0, order=None):
     """Parse additional data  sent along request."""
-    payloads = payloads["payload"]
+    payloads = payloads.get("payload", {})
     fields, domain, payload = [], [], {}
 
     if payloads.get("domain", None):
