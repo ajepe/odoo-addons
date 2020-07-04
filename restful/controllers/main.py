@@ -1,5 +1,6 @@
 """Part of odoo. See LICENSE file for full copyright and licensing details."""
-
+import re
+import ast
 import functools
 import logging
 from odoo.exceptions import AccessError
@@ -182,6 +183,15 @@ class APIController(http.Controller):
         """."""
         payload = payload.get('payload')
         action = action if action else payload.get('_method')
+        args = re.search('\((.+)\)', action)
+        if args:
+            args = ast.literal_eval(args.group())
+
+        if re.search('\w.+\(', action):
+            action = re.search('\w.+\(', action)
+            action = action.group()[0:-1]
+
+
         try:
             _id = int(id)
         except Exception as e:
@@ -191,7 +201,7 @@ class APIController(http.Controller):
             _callable = action in [method for method in dir(record) if callable(getattr(record, method))]
             if record and _callable:
                 # action is a dynamic variable.
-                getattr(record, action)()
+                getattr(record, action)(*args) if args else getattr(record, action)() 
             else:
                 return invalid_response(
                     "missing_record",
@@ -201,4 +211,4 @@ class APIController(http.Controller):
         except Exception as e:
             return invalid_response("exception", e, 503)
         else:
-            return valid_response("record %s has been successfully patched" % record.id)
+            return valid_response("record %s has been successfully update" % record.id)

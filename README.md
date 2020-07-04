@@ -1,7 +1,7 @@
-# My collections of Odoo addons
+# Odoo addons
 [![Build Status](https://travis-ci.org/ajepe/odoo-addons.svg?branch=12.0)](https://travis-ci.org/ajepe/odoo-addons)
 
-| Module       | Descriptions       | Available in version  |
-| ------------- |:-------------:| -----:|
-| resful    | Restful API For Odoo  | 10.0, 11.0, 12.0 |
+| Module        | Descriptions             | Version  |
+|: ------------:|:------------------------:|: -------:|
+| resful        | Restful API for Odoo ERP:|: 13.0    |
 
