@@ -150,12 +150,13 @@ class APIController(http.Controller):
                 "invalid object model", "The model %s is not available in the registry." % model, 404,
             )
         try:
-            request.env[_model.model].sudo().browse(_id).write(payload)
+            record = request.env[_model.model].sudo().browse(_id)
+            record.write(payload)
         except Exception as e:
             request.env.cr.rollback()
             return invalid_response("exception", e.name)
         else:
-            return valid_response("update %s record with id %s successfully!" % (_model.model, _id))
+            return valid_response(record.read())
 
     @validate_token
     @http.route(_routes, type="http", auth="none", methods=["DELETE"], csrf=False)
@@ -183,13 +184,14 @@ class APIController(http.Controller):
         """."""
         payload = payload.get('payload')
         action = action if action else payload.get('_method')
-        args = re.search('\((.+)\)', action)
-        if args:
-            args = ast.literal_eval(args.group())
+        args = []
+        # args = re.search('\((.+)\)', action)
+        # if args:
+        #     args = ast.literal_eval(args.group())
 
-        if re.search('\w.+\(', action):
-            action = re.search('\w.+\(', action)
-            action = action.group()[0:-1]
+        # if re.search('\w.+\(', action):
+        #     action = re.search('\w.+\(', action)
+        #     action = action.group()[0:-1]
 
 
         try:
