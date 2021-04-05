@@ -17,6 +17,7 @@
     "license": "LGPL-3",
     "price": "9.0",
     "currency": "EUR",
+    "images": ["static/description/main_screenshot.png"],
     'category': 'Hidden',
     'version': '1.0',
     'depends': ['base'],
