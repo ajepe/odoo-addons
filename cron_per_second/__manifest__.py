@@ -1,9 +1,7 @@
 {
     'name': "Cron Per Second",
 
-    'summary': """
-        Short (1 phrase/line) summary of the module's purpose, used as
-        subtitle on modules listing or apps.openerp.com""",
+    'summary': """Run cron/schedule action every second""",
 
     'description': """
         By default Odoo cron job or schedule action cannot be used to schedule a job in seconds interval. 
@@ -17,7 +15,7 @@
     'author': "Babatope Ajepe",
     'website': "http://www.galago.com.ng",
 
-    'category': 'Uncategorized',
+    'category': 'Hidden',
     'version': '1.0',
     'depends': ['base'],
 
