@@ -15,10 +15,10 @@
     'author': "Babatope Ajepe",
     'website': "http://www.galago.com.ng",
     "license": "LGPL-3",
-    "price": "9.0",
+    "price": "10.0",
     "currency": "EUR",
     "images": ["static/description/main_screenshot.png"],
-    'category': 'Hidden',
+    'category': 'HidProductivity/Notesden',
     'version': '1.0',
     'depends': ['base'],
 
