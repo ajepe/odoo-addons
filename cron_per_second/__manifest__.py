@@ -14,7 +14,9 @@
 
     'author': "Babatope Ajepe",
     'website': "http://www.galago.com.ng",
-
+    "license": "LGPL-3",
+    "price": "9.0",
+    "currency": "EUR",
     'category': 'Hidden',
     'version': '1.0',
     'depends': ['base'],
