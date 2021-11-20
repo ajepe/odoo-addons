@@ -1,4 +1,3 @@
-# Part of odoo. See LICENSE file for full copyright and licensing details.
 import json
 import logging
 
@@ -11,8 +10,6 @@ from odoo.exceptions import AccessError, AccessDenied
 
 _logger = logging.getLogger(__name__)
 
-expires_in = "restful.access_token_expires_in"
-
 
 class AccessToken(http.Controller):
     """."""
@@ -20,7 +17,6 @@ class AccessToken(http.Controller):
     def __init__(self):
 
         self._token = request.env["api.access_token"]
-        self._expires_in = request.env.ref(expires_in).sudo().value
 
     @http.route("/api/auth/token", methods=["GET"], type="http", auth="none", csrf=False)
     def token(self, **post):
@@ -106,7 +102,6 @@ class AccessToken(http.Controller):
                     "company_ids": request.env.user.company_ids.ids if uid else None,
                     "partner_id": request.env.user.partner_id.id,
                     "access_token": access_token,
-                    "expires_in": self._expires_in,
                 }
             ),
         )
