@@ -51,15 +51,16 @@ class APIController(http.Controller):
     @validate_token
     @http.route(_routes, type="http", auth="none", methods=["GET"], csrf=False)
     def get(self, model=None, id=None, **payload):
+        print("!!!!!!payload!!!!!!!!!!!!!1", payload)
         try:
             ioc_name = model
             model = request.env[self._model].search([("model", "=", model)], limit=1)
             if model:
-                domain, fields, offset, limit, order = extract_arguments(payload)
+                domain, fields, offset, limit, order = extract_arguments(**payload)
                 data = request.env[model.model].search_read(
                     domain=domain, fields=fields, offset=offset, limit=limit, order=order,
                 )
-                print(data)
+
                 if id:
                     domain = [("id", "=", int(id))]
                     data = request.env[model.model].search_read(
@@ -139,7 +140,7 @@ class APIController(http.Controller):
     @http.route(_routes, type="http", auth="none", methods=["PUT"], csrf=False)
     def put(self, model=None, id=None, **payload):
         """."""
-        payload = payload.get('payload', {})
+        payload = payload.get("payload", {})
         try:
             _id = int(id)
         except Exception as e:
@@ -182,8 +183,8 @@ class APIController(http.Controller):
     @http.route(_routes, type="http", auth="none", methods=["PATCH"], csrf=False)
     def patch(self, model=None, id=None, action=None, **payload):
         """."""
-        payload = payload.get('payload')
-        action = action if action else payload.get('_method')
+        payload = payload.get("payload")
+        action = action if action else payload.get("_method")
         args = []
         # args = re.search('\((.+)\)', action)
         # if args:
@@ -192,7 +193,6 @@ class APIController(http.Controller):
         # if re.search('\w.+\(', action):
         #     action = re.search('\w.+\(', action)
         #     action = action.group()[0:-1]
-
 
         try:
             _id = int(id)
@@ -203,7 +203,7 @@ class APIController(http.Controller):
             _callable = action in [method for method in dir(record) if callable(getattr(record, method))]
             if record and _callable:
                 # action is a dynamic variable.
-                getattr(record, action)(*args) if args else getattr(record, action)() 
+                getattr(record, action)(*args) if args else getattr(record, action)()
             else:
                 return invalid_response(
                     "missing_record",

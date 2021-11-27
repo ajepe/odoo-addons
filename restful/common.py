@@ -39,21 +39,17 @@ def invalid_response(typ, message=None, status=401):
     )
 
 
-def extract_arguments(payloads, offset=0, limit=0, order=None):
+def extract_arguments(limit="80", offset=0, order="id", domain="", fields=[]):
     """Parse additional data  sent along request."""
-    payloads = payloads.get("payload", {})
-    fields, domain, payload = [], [], {}
+    limit = int(limit)
+    expresions = []
+    if domain:
+        expresions = [tuple(preg.replace(":", ",").split(",")) for preg in domain.split(",")]
+        expresions = json.dumps(expresions)
+        expresions = json.loads(expresions, parse_int=True)
+    if fields:
+        fields = fields.split(",")
 
-    if payloads.get("domain", None):
-        domain = ast.literal_eval(payloads.get("domain"))
-    if payloads.get("fields"):
-        fields = ast.literal_eval(payloads.get("fields"))
-    if payloads.get("offset"):
-        offset = int(payloads.get("offset"))
-    if payloads.get("limit"):
-        limit = int(payloads.get("limit"))
-    if payloads.get("order"):
-        order = payloads.get("order")
-    filters = [domain, fields, offset, limit, order]
-
-    return filters
+    if offset:
+        offset = int(offset)
+    return [expresions, fields, offset, limit, order]

@@ -25,7 +25,6 @@ class APIAccessToken(models.Model):
     expires = fields.Datetime(string="Expires", required=True)
     scope = fields.Char(string="Scope")
 
-
     def find_one_or_create_token(self, user_id=None, create=False):
         if not user_id:
             user_id = self.env.user.id
@@ -48,7 +47,6 @@ class APIAccessToken(models.Model):
             return None
         return access_token.token
 
-
     def is_valid(self, scopes=None):
         """
         Checks if the access token is valid.
@@ -58,11 +56,9 @@ class APIAccessToken(models.Model):
         self.ensure_one()
         return not self.has_expired() and self._allow_scopes(scopes)
 
-
     def has_expired(self):
         self.ensure_one()
         return datetime.now() > fields.Datetime.from_string(self.expires)
-
 
     def _allow_scopes(self, scopes):
         self.ensure_one()

@@ -357,3 +357,8 @@ response = requests.request("DELETE", url, data=payload, headers=headers)
 print(response.text)
 ```
 We only need to make a delete request to the resource.
+
+
+# New Documentation
+
+http://localhost:8069/api/sale.order?limit=10&domain=id:>:1&fields=name,id,partner_id,origin&order=id asc&offset=10
