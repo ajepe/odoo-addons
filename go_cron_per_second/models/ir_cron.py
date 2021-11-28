@@ -1,7 +1,7 @@
-import odoo
 from dateutil.relativedelta import relativedelta
 
-from odoo import models, fields
+import odoo
+from odoo import fields, models
 
 odoo.service.server.SLEEP_INTERVAL = 1
 odoo.addons.base.models.ir_cron._intervalTypes["seconds"] = lambda interval: relativedelta(seconds=interval)

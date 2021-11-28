@@ -1,16 +1,13 @@
-"""Part of odoo. See LICENSE file for full copyright and licensing details."""
-import re
 import ast
 import functools
+import json
 import logging
-from odoo.exceptions import AccessError
+import re
 
 from odoo import http
-from odoo.addons.restful.common import (
-    extract_arguments,
-    invalid_response,
-    valid_response,
-)
+from odoo.addons.restful.common import (extract_arguments, invalid_response,
+                                        valid_response)
+from odoo.exceptions import AccessError
 from odoo.http import request
 
 _logger = logging.getLogger(__name__)
@@ -51,7 +48,6 @@ class APIController(http.Controller):
     @validate_token
     @http.route(_routes, type="http", auth="none", methods=["GET"], csrf=False)
     def get(self, model=None, id=None, **payload):
-        print("!!!!!!payload!!!!!!!!!!!!!1", payload)
         try:
             ioc_name = model
             model = request.env[self._model].search([("model", "=", model)], limit=1)
@@ -108,10 +104,8 @@ class APIController(http.Controller):
                             base_url, headers=headers, data=data)
 
         """
-        import ast
-
-        payload = payload.get("payload", {})
-        ioc_name = model
+        payload = request.httprequest.data.decode()
+        payload = json.loads(payload)
         model = request.env[self._model].search([("model", "=", model)], limit=1)
         values = {}
         if model:
@@ -134,13 +128,15 @@ class APIController(http.Controller):
                     return valid_response(data)
                 else:
                     return valid_response(data)
-        return invalid_response("invalid object model", "The model %s is not available in the registry." % ioc_name,)
+        return invalid_response("invalid object model", "The model %s is not available in the registry." % model,)
 
     @validate_token
     @http.route(_routes, type="http", auth="none", methods=["PUT"], csrf=False)
     def put(self, model=None, id=None, **payload):
         """."""
-        payload = payload.get("payload", {})
+        values = {}
+        payload = request.httprequest.data.decode()
+        payload = json.loads(payload)
         try:
             _id = int(id)
         except Exception as e:
@@ -152,10 +148,15 @@ class APIController(http.Controller):
             )
         try:
             record = request.env[_model.model].sudo().browse(_id)
-            record.write(payload)
+            for k, v in payload.items():
+                if "__api__" in k:
+                    values[k[7:]] = ast.literal_eval(v)
+                else:
+                    values[k] = v
+            record.write(values)
         except Exception as e:
             request.env.cr.rollback()
-            return invalid_response("exception", e.name)
+            return invalid_response("exception", e)
         else:
             return valid_response(record.read())
 
@@ -183,31 +184,22 @@ class APIController(http.Controller):
     @http.route(_routes, type="http", auth="none", methods=["PATCH"], csrf=False)
     def patch(self, model=None, id=None, action=None, **payload):
         """."""
-        payload = payload.get("payload")
-        action = action if action else payload.get("_method")
         args = []
-        # args = re.search('\((.+)\)', action)
-        # if args:
-        #     args = ast.literal_eval(args.group())
-
-        # if re.search('\w.+\(', action):
-        #     action = re.search('\w.+\(', action)
-        #     action = action.group()[0:-1]
-
         try:
             _id = int(id)
         except Exception as e:
             return invalid_response("invalid object id", "invalid literal %s for id with base" % id)
         try:
-            record = request.env[model].sudo().search([("id", "=", _id)])
+            record = request.env[model].sudo().search([("id", "=", _id)], limit=1)
             _callable = action in [method for method in dir(record) if callable(getattr(record, method))]
             if record and _callable:
                 # action is a dynamic variable.
                 getattr(record, action)(*args) if args else getattr(record, action)()
             else:
                 return invalid_response(
-                    "missing_record",
-                    "record object with id %s could not be found or %s object has no method %s" % (_id, model, action),
+                    "invalid object or method",
+                    "The given action '%s ' cannot be performed on record with id '%s' because '%s' has no such method"
+                    % (action, _id, model),
                     404,
                 )
         except Exception as e:

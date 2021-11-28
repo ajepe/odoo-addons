@@ -5,8 +5,8 @@ import werkzeug.wrappers
 
 from odoo import http
 from odoo.addons.restful.common import invalid_response, valid_response
+from odoo.exceptions import AccessDenied, AccessError
 from odoo.http import request
-from odoo.exceptions import AccessError, AccessDenied
 
 _logger = logging.getLogger(__name__)
 
