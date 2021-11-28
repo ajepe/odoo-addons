@@ -1,22 +1,65 @@
-# AUTHENTICATION 
+## AUTHENTICATION 
 
-- login 
-- logout
+- login -> get access token
+- logout -> delete access token
 
-In order to be able to access any document an access token needs to generated which serves as 
-session cookies in a regular web language. The token will **be needed** for every subsequent requests.
-Except for */api/auth/token* enpoint that accept **multipart/form-data** as the Content type every other 
-endpoints accept application/json as the 'Content Type'
+Before you can make use of ths module, an access token is required for all requests except for the authentication endpoints.
 
-# REQUEST ACCESS TOKEN
 
-```bash
-curl --request GET 
-  --url http://192.168.43.58:8069/api/auth/token 
-  --form db=api.ng 
-  --form login=admin 
-  --form password=admin
+#### Get Token
+
+These following fields are needed for token generation
+1. login: a valid user login name or email
+2. password: the related password to the account in [1]
+3. db: the database the user is trying to connect to.
+
+```python
+# Sample request.
+
+import requests
+
+url = "http://localhost:8069/api/auth/token"
+
+querystring = {"":""}
+
+headers = {
+    "login": "admin",
+    "password": "admin",
+    "db": "api.ng",
+    "content-type": "application/jsonp"
+}
+
+response = requests.get(url, headers=headers)
+
+print(response.json())
+
 ```
+#### Get Token Response
+
+```javascript
+{
+  "uid": 2,
+  "user_context": {
+    "lang": "en_US",
+    "tz": "Europe/Brussels",
+    "uid": 2
+  },
+  "company_id": 1,
+  "company_ids": [
+    1
+  ],
+  "partner_id": 3,
+  "access_token": "access_token_bb4545413125847104b02a4e9a4aa8088a90903d",
+  "company_name": "YourCompany",
+  "currency": "USD",
+  "country": "United States",
+  "contact_address": "YourCompany\n215 Vine St\n\nScranton PA 18503\nUnited States",
+  "customer_rank": 0
+}
+
+```
+
+
 
 Python request
 
