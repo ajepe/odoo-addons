@@ -1,7 +1,7 @@
 ## AUTHENTICATION 
 
-- login -> get access token
-- logout -> delete access token
+- login 
+- logout 
 
 Before you can make use of ths module, an access token is required for all requests except for the authentication endpoints.
 
@@ -19,9 +19,6 @@ These following fields are needed for token generation
 import requests
 
 url = "http://localhost:8069/api/auth/token"
-
-querystring = {"":""}
-
 headers = {
     "login": "admin",
     "password": "admin",
@@ -36,7 +33,7 @@ print(response.json())
 ```
 #### Get Token Response
 
-```javascript
+```python
 {
   "uid": 2,
   "user_context": {
@@ -59,83 +56,28 @@ print(response.json())
 
 ```
 
+### Delete token [LOGOUT]
 
-
-Python request
-
-
-```python
-import requests
-
-url = "http://192.168.43.58:8069/api/auth/token"
-
-payload = {
-  "db":"api.ng", 
-  "login": "admin", 
-  "password": "admin"
-}
-
-headers = {
-    'content-type': "multipart/form-data; 
-    'access-token': "access_token_ebb1914bbdb5622cd782a1a0ff51f81a2cba042a"
-    }
-
-response = requests.request("GET", url, data=payload, headers=headers)
-
-print(response.text)
-```
-To retrive an access token these following parameters needs to be set.
-
-* the database name as **db**
-* the connecting username as **login**
-* the user password as **password**
-The above request will return a response like below.
-
-```python
-{
-  "uid": 2,
-  "user_context": {
-    "lang": "en_US",
-    "tz": "Europe/Brussels",
-    "uid": 2
-  },
-  "company_id": 1,
-  "company_ids": [
-    1
-  ],
-  "partner_id": 3,
-  "access_token": "access_token_ebb1914bbdb5622cd782a1a0ff51f81a2cba042a",
-  "expires_in": "31536000"
-}
-```
-The most interesting part of the response is the access token field, *access_token_ebb1914bbdb5622cd782a1a0ff51f81a2cba042a* for every other request the token should to be send along the request headers else an invalid token response will be generated.
-
-# LOGOUT
-
-To logout of the system the token needs to be destroyed i.e deleted, by doing that the user/application making the request on behalf of the user  will have not futher access to Odoo.
-The token */api/auth/token* listen to both **GET** and **DELETE** requests, GET will fetch the token while delete request will deleted the token.
+To logout means that the token need to be deleted.
 
 ```python
 import requests
 
-url = "http://192.168.43.58:8069/api/auth/token"
-
-payload = {
-  "db":"api.ng", 
-  "login": "admin", 
-  "password": "admin"
-}
+url = "http://localhost:8069/api/sale.order/36"
 
 headers = {
-    'content-type': "multipart/form-data; 
-    'access-token': "access_token_ebb1914bbdb5622cd782a1a0ff51f81a2cba042a"
-    }
+    "Content-Type": "application/jsonp",
+    "access-token": "access_token_bb4545413125847104b02a4e9a4aa8088a90903d"
+}
 
-response = requests.request("DELETE", url, data=payload, headers=headers)
+response = requests.delete(url, headers=headers)
 
-print(response.text)
+print(response.json())
+
 ```
-# SALE
+
+
+#### CRUD Operation
 
 To get or fetch existing sale order
 ```python
