@@ -14,10 +14,6 @@ _logger = logging.getLogger(__name__)
 class AccessToken(http.Controller):
     """."""
 
-    def __init__(self):
-
-        self._token = request.env["api.access_token"]
-
     @http.route("/api/auth/token", methods=["GET"], type="http", auth="none", csrf=False)
     def token(self, **post):
         """The token URL to be used for getting the access_token:
@@ -112,12 +108,13 @@ class AccessToken(http.Controller):
             ),
         )
 
-    @http.route("/api/auth/token", methods=["DELETE"], type="http", auth="none", csrf=False)
+    @http.route(["/api/auth/token"], methods=["DELETE"], type="http", auth="none", csrf=False)
     def delete(self, **post):
         """Delete a given token"""
         token = request.env["api.access_token"]
         access_token = post.get("access_token")
-        access_token = token.search([("token", "=", access_token)], limit)
+
+        access_token = token.search([("token", "=", access_token)], limit=1)
         if not access_token:
             error = "Access token is missing in the request header or invalid token was provided"
             return invalid_response(400, error)
