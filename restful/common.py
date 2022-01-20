@@ -18,7 +18,7 @@ def default(o):
 def valid_response(data, status=200):
     """Valid Response
     This will be return when the http request was successfully processed."""
-    data = {"count": len(data) if not isinstance(data, str) else 1, "data": data}
+    data = {"count": len(data) if type(data) not in [int, str, bool] else 1, "data": data}
     return werkzeug.wrappers.Response(
         status=status, content_type="application/json; charset=utf-8", response=json.dumps(data, default=default),
     )
