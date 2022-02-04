@@ -2,6 +2,8 @@
 
 from odoo import api, fields, models
 
+from collections import defaultdict
+
 
 class IrModel(models.Model):
     """Enable all models to be available for API request."""
