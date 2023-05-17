@@ -104,7 +104,6 @@ class AccessToken(http.Controller):
                     "access_token": access_token,
                     "company_name": request.env.user.company_name,
                     # "currency": request.env.user.currency_id.name,
-                    "company_name": request.env.user.company_name,
                     "country": request.env.user.country_id.name,
                     "contact_address": request.env.user.contact_address,
                     # "customer_rank": request.env.user.customer_rank,
