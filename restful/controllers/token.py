@@ -48,7 +48,7 @@ class AccessToken(http.Controller):
         params = ["db", "login", "password"]
         params = {key: post.get(key) for key in params if post.get(key)}
         db, username, password = (
-            params.get("db"),
+            params.get("db", request.session.db),
             post.get("login"),
             post.get("password"),
         )
@@ -56,7 +56,7 @@ class AccessToken(http.Controller):
         if not _credentials_includes_in_body:
             # The request post body is empty the credetials maybe passed via the headers.
             headers = request.httprequest.headers
-            db = headers.get("db")
+            db = headers.get("db", request.session.db)
             username = headers.get("login")
             password = headers.get("password")
             _credentials_includes_in_headers = all([db, username, password])
@@ -104,7 +104,6 @@ class AccessToken(http.Controller):
                     "access_token": access_token,
                     "company_name": request.env.user.company_name,
                     # "currency": request.env.user.currency_id.name,
-                    "company_name": request.env.user.company_name,
                     "country": request.env.user.country_id.name,
                     "contact_address": request.env.user.contact_address,
                     # "customer_rank": request.env.user.customer_rank,

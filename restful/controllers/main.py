@@ -50,7 +50,7 @@ class APIController(http.Controller):
     def get(self, model=None, id=None, **payload):
         try:
             ioc_name = model
-            model = request.env[self._model].search([("model", "=", model)], limit=1)
+            model = request.env[self._model].sudo().search([("model", "=", model)], limit=1)
             if model:
                 domain, fields, offset, limit, order = extract_arguments(**payload)
                 data = request.env[model.model].search_read(
@@ -106,7 +106,7 @@ class APIController(http.Controller):
         """
         payload = request.httprequest.data.decode()
         payload = json.loads(payload)
-        model = request.env[self._model].search([("model", "=", model)], limit=1)
+        model = request.env[self._model].sudo().search([("model", "=", model)], limit=1)
         values = {}
         if model:
             try:
