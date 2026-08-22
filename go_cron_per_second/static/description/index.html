@@ -1,17 +1,173 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<section class="oe_cron_hero" style="background:#0b1f3a; padding:48px 24px; text-align:center;">
+  <div style="max-width:860px; margin:0 auto;">
+    <div style="display:inline-block; background:#ffffff14; border:1px solid #ffffff2e; border-radius:999px; padding:6px 18px; color:#9fd6ff; font-size:13px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:22px;">
+      Extension for Scheduled Actions
+    </div>
+    <h1 style="color:#ffffff; font-size:42px; line-height:1.15; margin:0 0 14px;">
+      Run Your Cron Jobs <span style="color:#39c2a7;">Every Second</span>
+    </h1>
+    <p style="color:#d9e6f5; font-size:18px; line-height:1.55; margin:0 auto 30px; max-width:640px;">
+      Take Odoo's scheduled actions to the next level with second-level precision.
+      Configure cron jobs to run every second &mdash; or at any other interval measured in seconds.
+    </p>
+    <!-- Promotional visual: stopwatch + badges (version-agnostic) -->
+    <div style="display:inline-block; position:relative; width:150px; height:150px; margin-bottom:26px;">
+      <div style="width:130px; height:130px; margin:10px auto; border-radius:50%; border:8px solid #ffffff2e; position:relative;">
+        <div style="position:absolute; top:-1px; left:61px; width:8px; height:12px; background:#9fd6ff;"></div>
+        <div style="position:absolute; top:61px; right:-1px; width:12px; height:8px; background:#9fd6ff66;"></div>
+        <div style="position:absolute; bottom:-1px; left:61px; width:8px; height:12px; background:#9fd6ff66;"></div>
+        <div style="position:absolute; top:61px; left:-1px; width:12px; height:8px; background:#9fd6ff66;"></div>
+        <div style="position:absolute; top:63px; left:64px; width:3px; height:56px; background:#39c2a7; transform-origin:top center; transform:rotate(40deg); border-radius:3px;"></div>
+        <div style="position:absolute; top:58px; left:58px; width:14px; height:14px; border-radius:50%; background:#39c2a7;"></div>
+      </div>
+    </div>
+    <div style="margin-top:4px;">
+      <span style="display:inline-block; background:#39c2a7; color:#04281f; font-weight:600; border-radius:8px; padding:8px 20px; margin:4px;">Every 1 Second</span>
+      <span style="display:inline-block; background:#ffffff14; color:#d9e6f5; border-radius:8px; padding:8px 20px; margin:4px;">High Precision</span>
+      <span style="display:inline-block; background:#ffffff14; color:#d9e6f5; border-radius:8px; padding:8px 20px; margin:4px;">Frequent Background Processing</span>
+      <span style="display:inline-block; background:#ffffff14; color:#d9e6f5; border-radius:8px; padding:8px 20px; margin:4px;">Native Scheduled Actions</span>
+    </div>
+  </div>
+</section>
 
-</head>
-<body>
-By default Odoo cron job or schedule action cannot be used to schedule a job in seconds interval. 
-i.e You cannot schedule a cron job to run every 5 seconds.
+<section class="container" style="padding:40px 24px;">
+  <div style="max-width:900px; margin:0 auto;">
+    <h2>Overview</h2>
+    <p>
+      By default, Odoo's Scheduled Actions can only repeat every minute, hour, day, week or month.
+      This module extends the standard scheduler with a <strong>Seconds</strong> interval unit,
+      so any cron job can be configured to run every second &mdash; or every N seconds.
+    </p>
+    <p>
+      It integrates directly with the Scheduled Actions you already use: no new interface to learn,
+      no separate job runner, no code changes required.
+    </p>
 
-This module enable running cron to the lowest time fragment. 
+    <h2>Key Features</h2>
+    <ul>
+      <li><strong>Second-level cron intervals</strong> &mdash; add a new "Seconds" unit to the Interval Unit selection.</li>
+      <li><strong>Run every 1 second</strong> &mdash; the shortest scheduling granularity available in Odoo.</li>
+      <li><strong>Fully configurable</strong> &mdash; combine any positive number of seconds with your action.</li>
+      <li><strong>Native integration</strong> &mdash; configured through the regular Scheduled Actions form.</li>
+      <li><strong>Simple configuration</strong> &mdash; install, then pick the interval; no development needed.</li>
+      <li><strong>Safe for existing jobs</strong> &mdash; current cron jobs keep their behavior unchanged.</li>
+      <li><strong>Built for frequent tasks</strong> &mdash; suited to lightweight actions that must run often.</li>
+    </ul>
 
-It is advisable to be use for quick and fast action that will take less execution time
-</body>
-</html>
+    <h2>How It Works</h2>
+    <p>
+      Odoo stores each scheduled action's repeat interval as a number plus a unit. This module registers
+      an additional unit ("Seconds") and teaches the scheduler how to apply it when computing the next
+      execution date of a job. It also keeps the scheduler responsive enough to honor one-second cadences.
+    </p>
+    <p>A scheduled action configured like this runs approximately every second:</p>
+    <pre style="background:#f5f7fa; border:1px solid #e1e6ed; border-radius:8px; padding:16px 20px; display:inline-block;"><code>Interval Number: 1
+Interval Unit:   Seconds</code></pre>
+    <p style="margin-top:14px;">
+      Execution happens at approximately one-second intervals, subject to your server's worker count,
+      scheduler load and the duration of the action itself.
+    </p>
+
+    <h2>Use Cases</h2>
+    <p>
+      Useful whenever integrations or processes require frequent, lightweight scheduled processing, for example:
+    </p>
+    <ul>
+      <li>Near real-time data synchronization between systems</li>
+      <li>Fast queue processing (pick up queued items as soon as they arrive)</li>
+      <li>Polling external APIs for status changes (payments, shipments, documents)</li>
+      <li>IoT integrations that push readings at short intervals</li>
+      <li>Live metrics collection and dashboard refreshes</li>
+      <li>Time-sensitive notifications and reminders</li>
+      <li>Monitoring external systems from within Odoo</li>
+    </ul>
+    <p>
+      The module provides the scheduling mechanism only &mdash; it does not include synchronization,
+      queueing or monitoring systems themselves.
+    </p>
+
+    <h2>Benefits</h2>
+    <ul>
+      <li>More precise scheduling than the default one-minute minimum</li>
+      <li>Better support for time-sensitive workflows</li>
+      <li>Native integration with Odoo's standard scheduled-action mechanism</li>
+      <li>Minimal configuration &mdash; a single field change per action</li>
+      <li>Ideal for high-frequency background tasks that stay lightweight</li>
+    </ul>
+
+    <h2>Configuration Example</h2>
+    <p>To run a scheduled action every second:</p>
+    <ol>
+      <li>Open <strong>Settings &gt; Technical &gt; Automation &gt; Scheduled Actions</strong>.</li>
+      <li>Create a new scheduled action (or edit an existing one).</li>
+      <li>Set <strong>Execute Every</strong> to <code>1</code>.</li>
+      <li>Select <strong>Seconds</strong> in the <strong>Interval Unit</strong> dropdown.</li>
+      <li>Choose the model and write the action code (Python code, or another action type), then activate the record.</li>
+    </ol>
+    <p>
+      For a five-second cadence, set <strong>Execute Every = 5</strong> with the same unit.
+      The next execution date shown on the record always reflects your configuration.
+    </p>
+
+    <h2>Performance Considerations</h2>
+    <div style="background:#fff7e0; border-left:4px solid #f0ad4e; border-radius:6px; padding:16px 20px;">
+      <strong>&#9888;&#65039; Important</strong>
+      <p style="margin:8px 0 0;">
+        A cron job that runs every second can significantly increase server and database workload.
+        Before enabling second-level execution, carefully evaluate:
+      </p>
+      <ul style="margin:8px 0 0;">
+        <li>CPU usage generated by the repeated executions</li>
+        <li>Database workload created by each run</li>
+        <li>The total number of scheduled actions running at short intervals</li>
+        <li>The execution time of the method being called &mdash; it should complete well within the interval</li>
+        <li>The frequency of external API calls triggered by the action (rate limits and costs)</li>
+      </ul>
+      <p style="margin:8px 0 0;">
+        Keep second-level execution for genuinely time-sensitive, fast operations only.
+        For heavy processing, prefer larger intervals or a dedicated job-queue solution.
+      </p>
+    </div>
+
+    <h2>Compatibility</h2>
+    <p>
+      The module follows Odoo's standard versioning scheme: install the release matching your Odoo
+      version (use the version selector on the Apps Store). It depends only on Odoo's base
+      framework, so it works alongside any application you have installed.
+    </p>
+
+    <h2>For Developers</h2>
+    <p>
+      Developers can rely on second-level scheduling for time-sensitive background processes while
+      continuing to use Odoo's standard scheduled-action mechanism: define an
+      <code>ir.cron</code> record as usual, set <code>interval_number</code> and choose
+      <code>'seconds'</code> as <code>interval_type</code>. Everything else &mdash; activation,
+      logging, failure handling and manual triggering &mdash; behaves exactly like any other
+      scheduled action.
+    </p>
+
+    <h2>FAQ</h2>
+    <h3>Can I run a cron every second?</h3>
+    <p>Yes. Set <strong>Interval Number = 1</strong> and <strong>Interval Unit = Seconds</strong>; the scheduler will target a one-second cadence.</p>
+
+    <h3>Can I use intervals other than one second?</h3>
+    <p>Yes. Any positive whole number of seconds is supported: 1, 2, 5, 10 seconds and so on.</p>
+
+    <h3>Will existing Odoo cron jobs continue working?</h3>
+    <p>Yes. The module only adds a new interval unit option. Existing scheduled actions keep their original intervals and are not affected by installation or uninstallation.</p>
+
+    <h3>Does this replace Odoo's Scheduled Actions?</h3>
+    <p>No. It extends the existing Scheduled Actions feature rather than introducing a separate scheduler. You configure everything in the familiar place under Settings &gt; Technical.</p>
+
+    <h3>Is execution exactly on the second?</h3>
+    <p>No. Runs are targeted at the configured cadence but are subject to normal scheduler behavior: available workers, other running jobs and the duration of previous runs. Treat the interval as "approximately every N seconds".</p>
+
+    <h3>Can I use it for heavy background processing?</h3>
+    <p>It is not recommended. Frequent execution multiplies whatever work the action performs. For heavy jobs, keep longer intervals or use a dedicated asynchronous job queue solution, and reserve second-level execution for quick, lightweight operations.</p>
+
+    <h2>Support</h2>
+    <p>
+      Questions or feature requests? Reach out via the module's support channel on the Apps Store.
+    </p>
+  </div>
+</section>

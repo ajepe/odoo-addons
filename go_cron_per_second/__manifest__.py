@@ -1,13 +1,21 @@
 {
     "name": "Cron Per Second",
-    "summary": """Run cron/schedule action every second""",
+    "summary": """Run your cron jobs every second - second-level scheduling for Scheduled Actions""",
     "description": """
-        By default Odoo cron job or schedule action cannot be used to schedule a job in seconds interval.
-        i.e You cannot schedule a cron job to run every 5 seconds.
+Run Your Cron Jobs Every Second
+===============================
+Take Odoo's scheduled actions to the next level with second-level precision.
+This module adds a "Seconds" interval unit to Scheduled Actions, so any cron
+job can be configured to run every second - or at any other interval measured
+in seconds.
 
-        This module enable running cron to the lowest time fragment. It is advisable to be use for quick and fast action that
-        will take less execution time
+- Second-level cron intervals (every 1 second, or every N seconds)
+- Native integration: configured in Settings > Technical > Scheduled Actions
+- Existing cron jobs keep their behavior unchanged
+- Suited to lightweight, high-frequency background tasks
 
+See the module page for use cases, configuration examples and performance
+recommendations.
     """,
     "author": "Babatope Ajepe",
     "website": "http://www.galago.com.ng",
