@@ -4,7 +4,7 @@ import logging
 import werkzeug.wrappers
 
 from odoo import http
-from odoo.addons.restful.common import invalid_response, valid_response
+from odoo.addons.restful.common import get_request_access_token, invalid_response, valid_response
 from odoo.exceptions import AccessDenied, AccessError
 from odoo.http import request
 
@@ -20,33 +20,33 @@ class AccessToken(http.Controller):
 
         Args:
             **post must contain login and password.
-        Returns:
 
+        Returns:
             returns https response code 404 if failed error message in the body in json format
             and status code 202 if successful with the access_token.
-        Example:
-           import requests
 
-           headers = {'content-type': 'text/plain', 'charset':'utf-8'}
+        Example::
 
-           data = {
-               'login': 'admin',
-               'password': 'admin',
-               'db': 'galago.ng'
+            import requests
+
+            data = {
+                'login': 'admin',
+                'password': 'admin',
+                'db': 'mydatabase'
             }
-           base_url = 'http://odoo.ng'
-           eq = requests.post(
-               '{}/api/auth/token'.format(base_url), data=data, headers=headers)
-           content = json.loads(req.content.decode('utf-8'))
-           headers.update(access-token=content.get('access_token'))
+            base_url = 'http://localhost:8069'
+            req = requests.get(
+                '{}/api/auth/token'.format(base_url), params=data)
+            content = req.json()
+            headers = {'Authorization': 'Bearer {}'.format(content['access_token'])}
         """
         _token = request.env["api.access_token"]
         params = ["db", "login", "password"]
         params = {key: post.get(key) for key in params if post.get(key)}
         db, username, password = (
             params.get("db"),
-            post.get("login"),
-            post.get("password"),
+            params.get("login"),
+            params.get("password"),
         )
         _credentials_includes_in_body = all([db, username, password])
         if not _credentials_includes_in_body:
@@ -59,21 +59,22 @@ class AccessToken(http.Controller):
             if not _credentials_includes_in_headers:
                 # Empty 'db' or 'username' or 'password:
                 return invalid_response(
-                    "missing error", "either of the following are missing [db, username,password]", 403,
+                    "missing_credentials", "either of the following are missing [db, username, password]", 400,
                 )
         # Login in odoo database:
         try:
-            request.session.authenticate(db, username, password)
+            credential = {"login": username, "password": password, "type": "password"}
+            request.session.authenticate(db, credential)
+        except AccessDenied:
+            return invalid_response("access_denied", "Login, password or db invalid", 401)
         except AccessError as aee:
-            return invalid_response("Access error", "Error: %s" % aee.name)
-        except AccessDenied as ade:
-            return invalid_response("Access denied", "Login, password or db invalid")
+            return invalid_response("access_error", "Error: %s" % aee, 403)
         except Exception as e:
             # Invalid database:
             info = "The database name is not valid {}".format((e))
             error = "invalid_database"
             _logger.error(info)
-            return invalid_response("wrong database name", error, 403)
+            return invalid_response("wrong database name", error, 400)
 
         uid = request.session.uid
         # odoo login failed:
@@ -81,7 +82,7 @@ class AccessToken(http.Controller):
             info = "authentication failed"
             error = "authentication failed"
             _logger.error(info)
-            return invalid_response(401, error, info)
+            return invalid_response(error, info, 401)
 
         # Generate tokens
         access_token = _token.find_one_or_create_token(user_id=uid, create=True)
@@ -93,17 +94,15 @@ class AccessToken(http.Controller):
             response=json.dumps(
                 {
                     "uid": uid,
-                    "user_context": request.session.get_context() if uid else {},
+                    "user_context": dict(request.session.context) if uid else {},
                     "company_id": request.env.user.company_id.id if uid else None,
                     "company_ids": request.env.user.company_ids.ids if uid else None,
                     "partner_id": request.env.user.partner_id.id,
                     "access_token": access_token,
                     "company_name": request.env.user.company_name,
-                    "currency": request.env.user.currency_id.name,
-                    "company_name": request.env.user.company_name,
+                    "currency": request.env.user.company_id.currency_id.name,
                     "country": request.env.user.country_id.name,
                     "contact_address": request.env.user.contact_address,
-                    "customer_rank": request.env.user.customer_rank,
                 }
             ),
         )
@@ -111,13 +110,13 @@ class AccessToken(http.Controller):
     @http.route(["/api/auth/token"], methods=["DELETE"], type="http", auth="none", csrf=False)
     def delete(self, **post):
         """Delete a given token"""
-        token = request.env["api.access_token"]
-        access_token = post.get("access_token")
+        token = request.env["api.access_token"].sudo()
+        access_token = get_request_access_token() or post.get("access_token")
 
         access_token = token.search([("token", "=", access_token)], limit=1)
         if not access_token:
             error = "Access token is missing in the request header or invalid token was provided"
-            return invalid_response(400, error)
+            return invalid_response("missing_access_token", error, 400)
         for token in access_token:
             token.unlink()
         # Successful response:

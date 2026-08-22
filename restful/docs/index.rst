@@ -1,102 +1,176 @@
-Odoo RESTful API(restful)
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Odoo RESTful API (restful)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In other to use this module, a basic understating of Odoo RPC interface
-is required(though not that neccessary) especially when dealing with
-Many2many and One2many relationship. The implementation sits on the
-existing Odoo RPC features, data structures and format when creating or
-delecting Odoo's records are still applicable. I will be demostrating
-the usage using python request library.
+A generic REST API for Odoo. Every model of every installed module is
+exposed through a simple, uniform HTTP interface. The implementation sits
+on the existing Odoo ORM, so Odoo data structures and formats (domains,
+x2many command lists, ...) still apply.
+
+All examples use the ``sale.order`` model and the python ``requests``
+library; any HTTP client works.
 
 Access token request
 ^^^^^^^^^^^^^^^^^^^^
 
-An access token is required in other to be able to perform any
-operations and ths token once generated should alway be send a long side
-any subsequents request.
+An access token is required in order to perform any operation, and the
+token must be sent along with every subsequent request.
 
 .. code:: python
 
-    import requests, json
+    import requests
 
+    base_url = 'http://localhost:8069'
+
+    req = requests.get('{}/api/auth/token'.format(base_url),
+                       params={'db': 'mydatabase',
+                               'login': 'admin',
+                               'password': 'admin'})
+    content = req.json()
+
+    # send the token on every request using the standard Bearer scheme
     headers = {
-        'content-type': 'application/x-www-form-urlencoded',
-        'charset':'utf-8'
+        'Authorization': 'Bearer {}'.format(content['access_token']),
+        'Content-Type': 'application/json',
     }
+
+.. note::
+
+    The ``access-token`` header is also accepted for backward
+    compatibility. Avoid the legacy ``access_token`` (underscore) header:
+    HTTP servers and proxies silently drop headers containing underscores.
+
+Requests run with the access rights and record rules of the user the
+token belongs to.
+
+Delete access token (logout)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+    req = requests.delete('{}/api/auth/token'.format(base_url), headers=headers)
+
+URL scheme
+~~~~~~~~~~
+
+::
+
+    /api/<model>                  e.g. /api/sale.order
+    /api/<model>/<id>             e.g. /api/sale.order/37
+    /api/<model>/<id>/<action>    e.g. /api/sale.order/37/action_confirm
+
+[GET] list records
+~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+    req = requests.get('{}/api/sale.order'.format(base_url), headers=headers,
+                       params={'limit': 10,
+                               'offset': 0,
+                               'fields': 'name,partner_id,amount_total,state',
+                               'domain': 'state:=:sale',
+                               'order': 'id asc'})
+    print(req.json())
+
+Query parameters:
+
+* ``limit``: maximum number of records to return
+* ``offset``: number of records to skip
+* ``fields``: comma-separated field names; omit to return all fields
+* ``domain``: record filter as comma-separated ``field:operator:value``
+  triplets, e.g. ``state:=:sale,amount_total:>:1000``
+* ``order``: sort order, e.g. ``id asc``
+
+[GET] one record
+~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+    req = requests.get('{}/api/sale.order/37'.format(base_url), headers=headers,
+                       params={'fields': 'name,partner_id,amount_total,state'})
+    print(req.json())
+
+[POST] create a record
+~~~~~~~~~~~~~~~~~~~~~~
+
+Send the field values as a JSON body. One2many/Many2many fields take an
+Odoo command list as a native JSON array, using the plain field name:
+
+.. code:: python
+
+    import json
 
     data = {
-        'login': 'admin',
-        'password': 'admin',
-        'db': 'demo_db'
+        'partner_id': 10,
+        'order_line': [
+            [0, 0, {'product_id': 1, 'product_uom_qty': 2, 'price_unit': 4000}],
+            [0, 0, {'product_id': 2, 'product_uom_qty': 1, 'price_unit': 250}],
+        ],
     }
-    base_url = 'http://theninnercicle.com.ng'
+    req = requests.post('{}/api/sale.order'.format(base_url), headers=headers,
+                        params={'fields': 'name,amount_total'},
+                        data=json.dumps(data))
+    print(req.json())
 
-    req = requests.get('{}/api/auth/token'.format(base_url), data=data, headers=headers)
+``[0, 0, {...}]`` is the standard Odoo "create" command for x2many
+fields; all Odoo command tuples are supported (``[1, id, {...}]`` update,
+``[2, id]`` delete, ``[4, id]`` link, ``[6, 0, [ids]]`` replace, ...).
 
-    content = json.loads(req.content.decode('utf-8'))
-
-    headers['access-token'] = content.get('access_token') # add the access token to the header
-    print(headers)
-
-To delete acccess-token
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code:: python
-
-    req = requests.delete('%s/api/auth/token'%base_url, data=data, headers=headers)
-
-[GET]
-~~~~~
+[PUT] update a record
+~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
-    req = requests.get('{}/api/sale.order/'.format(base_url), headers=headers,
-                       data={'limit': 10, 'domain': []})
-    # ***Pass optional parameter like this ***
-    {
-      'limit': 10, 'domain': "[('supplier','=',True),('parent_id','=', False)]",
-      'order': 'name asc', 'offset': 10
-    }
+    req = requests.put('{}/api/sale.order/37'.format(base_url), headers=headers,
+                       data=json.dumps({'client_order_ref': 'PO-2024-118'}))
+    print(req.json())
 
-    print(req.content)
+[PATCH] call a method on a record
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[POST]
-~~~~~~
-
-\`\`\`python
-
-**POST request**
+PATCH invokes a model method (e.g. a button action) on a single record.
+The method name goes in the URL; the request body is a python-literal
+list of positional arguments (``[]`` for none):
 
 .. code:: python
 
-    p = requests.post('%s/api/res.partner/'%base_url, headers=headers,
-                      data=json.dumps({
-        'name':'John',
-        'country_id': 105,
-        'child_ids': [{'name': 'Contact', 'type':'contact'},
-                      {'name': 'Invoice', 'type':'invoice'}],
-        'category_id': [{'id':9}, {'id': 10}]
-        }
-    ))
-    print(p.content)
+    req = requests.patch('{}/api/sale.order/37/action_confirm'.format(base_url),
+                         headers=headers, data='[]')
+    print(req.json())
 
-**PUT Request**
+This is equivalent to clicking the *Confirm* button on sale order 37.
+
+[DELETE] delete a record
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
-    p = requests.put('http://theninnercicle.com.ng/api/res.partner/68', headers=headers,
-                     data=json.dumps({
-        'name':'John Doe',
-        'country_id': 107,
-        'category_id': [{'id': 10}]
-        }
-    ))
-    print(p.content)
+    req = requests.delete('{}/api/sale.order/37'.format(base_url), headers=headers)
+    print(req.json())
 
-**DELETE Request**
+Responses
+~~~~~~~~~
 
-.. code:: python
+Successful responses always have the shape::
 
-    p = requests.delete('http://theninnercicle.com.ng/api/res.partner/68', headers=headers)
-    print(p.content)
+    {"count": 1, "data": ...}
 
+Errors are JSON objects with an HTTP error status::
+
+    {"type": "access_token", "message": "token seems to have expired or invalid"}
+
+Status codes
+~~~~~~~~~~~~
+
+====  ===============  =========================================================
+Code  Meaning          When
+====  ===============  =========================================================
+200   OK               Successful GET, PUT, PATCH, DELETE
+201   Created          Successful POST
+400   Bad Request      Missing credentials, malformed JSON body, invalid
+                       id/arguments, Odoo validation errors
+401   Unauthorized     Missing, expired or invalid access token, wrong
+                       login/password
+403   Forbidden        The token user is authenticated but lacks access
+                       rights on the model
+404   Not Found        Unknown model or record id, unknown method on record
+====  ===============  =========================================================

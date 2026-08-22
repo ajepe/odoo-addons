@@ -7,10 +7,57 @@
             <p>This module helps you to connect or integrate any third party application with Odoo.
             <br/>It provides a fluent and easy HTTP based API interface instead of the Odoo default RPC.
             <br/>By design Odoo is shipped with RPC API interfaces which may not be straight forward for many developers that are not familiar with the RPC(s).
-                This is module only cares about generating an HTTP response for each HTTP request, it has nothing to do with your or existing application logic. 
+                This module only cares about generating an HTTP response for each HTTP request, it has nothing to do with your or existing application logic.
                 For detailed example of REST API refer <br/>
-                <b><a href="https://ajepe.github.io/posts/restful-api-for-odoo">https://ajepe.github.io/posts/restful-api-for-odoo</a><b></p>
+                <b><a href="https://ajepe.github.io/posts/restful-api-for-odoo">https://ajepe.github.io/posts/restful-api-for-odoo</a></b></p>
         </div>
+</section>
+
+<section class="container">
+    <div class="col-md-12">
+        <h3>Quick start</h3>
+        <p>1. Request an access token:</p>
+        <pre>
+GET /api/auth/token?db=mydatabase&amp;login=admin&amp;password=admin</pre>
+        <p>2. Send the token on every request using the standard Bearer scheme:</p>
+        <pre>
+Authorization: Bearer access_token_bb4545413125847104b02a4e9a4aa8088a90903d</pre>
+        <p>Requests run with the access rights and record rules of the user the token belongs to.</p>
     </div>
 </section>
 
+<section class="container oe_dark">
+    <div class="col-md-12">
+        <h3>CRUD operations on any model (example: sale.order)</h3>
+        <pre>
+# list sale orders
+GET    /api/sale.order?limit=10&amp;fields=name,partner_id,amount_total&amp;domain=state:=:sale&amp;order=id asc
+
+# read one sale order
+GET    /api/sale.order/37?fields=name,partner_id,amount_total
+
+# create a sale order (JSON body, x2many fields take Odoo command lists)
+POST   /api/sale.order
+       {"partner_id": 10, "order_line": [[0, 0, {"product_id": 1, "price_unit": 4000}]]}
+
+# update a sale order
+PUT    /api/sale.order/37
+       {"client_order_ref": "PO-2024-118"}
+
+# call a method / button action on a sale order (body = list of arguments)
+PATCH  /api/sale.order/37/action_confirm
+       []
+
+# delete a sale order
+DELETE /api/sale.order/37</pre>
+    </div>
+</section>
+
+<section class="container">
+    <div class="col-md-12">
+        <h3>Responses</h3>
+        <p>Successful responses always have the shape <code>{"count": 1, "data": ...}</code>;
+        errors are JSON objects with an HTTP error status:
+        <code>{"type": "access_token", "message": "token seems to have expired or invalid"}</code></p>
+    </div>
+</section>

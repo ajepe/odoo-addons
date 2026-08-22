@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-   <data>
-        <record id="view_users_form_inherit" model="ir.ui.view">
-            <field name="model">res.users</field>
-            <field name="inherit_id" ref="base.view_users_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//notebook/page" position="inside">
+    <record id="view_users_form_inherit" model="ir.ui.view">
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='access_rights']" position="inside">
+                <group string="API Access Tokens">
                     <field name="token_ids">
-                        <tree create="false">
+                        <list create="false">
                             <field name="token"/>
-                        </tree>
+                        </list>
                     </field>
-                </xpath>
-            </field>
-        </record>
-    </data>
+                </group>
+            </xpath>
+        </field>
+    </record>
 </odoo>

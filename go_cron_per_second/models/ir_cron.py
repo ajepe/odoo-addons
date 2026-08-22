@@ -1,13 +1,16 @@
 from dateutil.relativedelta import relativedelta
 
-import odoo
 from odoo import fields, models
+from odoo.addons.base.models import ir_cron
+from odoo.service import server
 
-odoo.service.server.SLEEP_INTERVAL = 1
-odoo.addons.base.models.ir_cron._intervalTypes["seconds"] = lambda interval: relativedelta(seconds=interval)
+server.SLEEP_INTERVAL = 1
+ir_cron._intervalTypes["seconds"] = lambda interval: relativedelta(seconds=interval)
 
 
-class IRCron(models.Model):
+class IrCron(models.Model):
     _inherit = "ir.cron"
 
-    interval_type = fields.Selection(selection_add=[("seconds", "Seconds")])
+    interval_type = fields.Selection(
+        selection_add=[("seconds", "Seconds")], ondelete={"seconds": "cascade"}
+    )
