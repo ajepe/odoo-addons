@@ -177,13 +177,13 @@ print(response.json())
 ### PATCH — call a method on a record
 
 PATCH invokes a model method (e.g. a button action) on a single record. The
-method name goes in the URL; the request body is a python-literal list of
-positional arguments (`[]` for none):
+method name goes in the URL; the request body is a JSON array of positional
+arguments (`[]` for none):
 
 ```python
 response = requests.patch(
     "http://localhost:8069/api/sale.order/37/action_confirm",
-    data="[]",
+    data=json.dumps([]),
     headers=headers,
 )
 print(response.json())

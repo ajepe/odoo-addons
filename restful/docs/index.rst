@@ -128,13 +128,13 @@ fields; all Odoo command tuples are supported (``[1, id, {...}]`` update,
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 PATCH invokes a model method (e.g. a button action) on a single record.
-The method name goes in the URL; the request body is a python-literal
-list of positional arguments (``[]`` for none):
+The method name goes in the URL; the request body is a JSON array of
+positional arguments (``[]`` for none):
 
 .. code:: python
 
     req = requests.patch('{}/api/sale.order/37/action_confirm'.format(base_url),
-                         headers=headers, data='[]')
+                         headers=headers, data=json.dumps([]))
     print(req.json())
 
 This is equivalent to clicking the *Confirm* button on sale order 37.

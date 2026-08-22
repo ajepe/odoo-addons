@@ -1,4 +1,3 @@
-import ast
 import functools
 import json
 import logging
@@ -192,11 +191,11 @@ class APIController(http.Controller):
         """."""
         payload_str = request.httprequest.data.decode()
         try:
-            args = ast.literal_eval(payload_str) if payload_str else []
-        except (ValueError, SyntaxError) as e:
-            return invalid_response("invalid_arguments", "Error: %s" % e, 400)
-        if not isinstance(args, (list, tuple)):
-            return invalid_response("invalid_arguments", "PATCH body must be a list of arguments", 400)
+            args = json.loads(payload_str) if payload_str else []
+        except ValueError as e:
+            return invalid_response("invalid_json", "Error: %s" % e, 400)
+        if not isinstance(args, list):
+            return invalid_response("invalid_arguments", "PATCH body must be a JSON array of arguments", 400)
         try:
             _id = int(id)
         except (ValueError, TypeError):
@@ -206,8 +205,10 @@ class APIController(http.Controller):
                 "invalid object model", "The model %s is not available in the registry." % model, 404,
             )
         record = request.env[model].search([("id", "=", _id)], limit=1)
+        if not record:
+            return invalid_response("missing_record", "record object with id %s could not be found" % _id, 404)
         _callable = action in [method for method in dir(record) if callable(getattr(record, method))]
-        if not record or not _callable:
+        if not _callable:
             return invalid_response(
                 "invalid object or method",
                 "The given action '%s ' cannot be performed on record with id '%s' because '%s' has no such method"
